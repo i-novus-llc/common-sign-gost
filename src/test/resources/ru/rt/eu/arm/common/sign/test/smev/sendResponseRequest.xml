@@ -1,0 +1,62 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <ns2:SendResponseRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
+                                 xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+            <ns2:SenderProvidedResponseData Id="SIGNED_BY_PROVIDER">
+                <ns2:MessageID>c8aac01f-bc02-11e8-af1e-005056b1e729</ns2:MessageID>
+                <ns2:To>
+                    eyJzaWQiOjMwOTQ3LCJtaWQiOiJiZjA0Y2YyYS1iYzAyLTExZTgtOTc2OC0wMDUwNTZiMTM2MGYiLCJlb2wiOjAsInNsYyI6ImVnaXN6LnJvc21pbnpkcmF2LnJ1X3NtZXZfaWVocl9HZXRBcmNoaXZlZE1lZGljYWxEb2N1bWVudHNfMS4wLjJfSW5wdXREYXRhIiwibW5tIjoiTVpSVjAxIn0=
+                </ns2:To>
+                <MessagePrimaryContent>
+                    <OutputData xmlns="http://egisz.rosminzdrav.ru/smev/iehr/GetArchivedMedicalDocuments/1.0.2">
+                        <DocumentList>
+                            <Document>
+                                <MedicalOrganization>ГБУЗ РА "Гиагинская ЦРБ" (Республика Адыгея)</MedicalOrganization>
+                                <DocumentUid>f9cdeea4-6605-4d64-aac4-a7844f4b4117</DocumentUid>
+                                <DocumentType>Документ для ПМИ</DocumentType>
+                                <DocumentDate>2018-03-14</DocumentDate>
+                                <Description>Документ для тестирования ВС 3</Description>
+                                <DoctorList>
+                                    <Doctor>
+                                        <DoctorName>Сорокин Сергей Борисович</DoctorName>
+                                        <MedicalSpecialty>Ультразвуковая диагностика</MedicalSpecialty>
+                                    </Doctor>
+                                    <Doctor>
+                                        <DoctorName>Конюков Константин Владимирович</DoctorName>
+                                        <MedicalSpecialty>Хирургия</MedicalSpecialty>
+                                    </Doctor>
+                                </DoctorList>
+                            </Document>
+                            <Document>
+                                <MedicalOrganization>ГБУЗ РА "МГП №3" (Республика Адыгея)</MedicalOrganization>
+                                <DocumentUid>9038ce4f-454d-4b9e-a88e-e47aee1a5fd8</DocumentUid>
+                                <DocumentType>Контрольная карта диспансерного наблюдения</DocumentType>
+                                <DocumentDate>2018-07-15</DocumentDate>
+                                <Description>курлык</Description>
+                                <DoctorList>
+                                    <Doctor>
+                                        <DoctorName>Конюков Константин Владимирович</DoctorName>
+                                        <MedicalSpecialty>Хирургия</MedicalSpecialty>
+                                    </Doctor>
+                                </DoctorList>
+                            </Document>
+                            <Document>
+                                <MedicalOrganization>ГБУЗ РА "МГП №3" (Республика Адыгея)</MedicalOrganization>
+                                <DocumentUid>2a293431-99e7-4187-86ee-fca84a6fab52</DocumentUid>
+                                <DocumentType>Контрольная карта диспансерного наблюдения</DocumentType>
+                                <DocumentDate>2018-07-15</DocumentDate>
+                                <Description>курлык</Description>
+                                <DoctorList>
+                                    <Doctor>
+                                        <DoctorName>Конюков Константин Владимирович</DoctorName>
+                                        <MedicalSpecialty>Хирургия</MedicalSpecialty>
+                                    </Doctor>
+                                </DoctorList>
+                            </Document>
+                        </DocumentList>
+                    </OutputData>
+                </MessagePrimaryContent>
+            </ns2:SenderProvidedResponseData>
+        </ns2:SendResponseRequest>
+    </soap:Body>
+</soap:Envelope>

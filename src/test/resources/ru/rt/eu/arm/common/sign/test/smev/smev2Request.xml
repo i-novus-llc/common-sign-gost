@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap-env:Header/>
+    <soap-env:Body wsu:Id="body-wsu-id"
+                   xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+        <InputMsgSendRequest xmlns="http://tempuri.org/">
+            <smev:Message xmlns:smev="http://smev.gosuslugi.ru/rev120315">
+                <smev:Sender>
+                    <smev:Code>MCXR02001</smev:Code>
+                    <smev:Name>Информационная система Минсельхоза России</smev:Name>
+                </smev:Sender>
+                <smev:Recipient>
+                    <smev:Code>MCXR02001</smev:Code>
+                    <smev:Name>Информационная система Минсельхоза России</smev:Name>
+                </smev:Recipient>
+                <smev:Originator>
+                    <smev:Code>MCXR02001</smev:Code>
+                    <smev:Name>Информационная система Минсельхоза России</smev:Name>
+                </smev:Originator>
+                <smev:Service>
+                    <smev:Mnemonic>svedmereconzatrpodvod</smev:Mnemonic>
+                    <smev:Version>2.00</smev:Version>
+                </smev:Service>
+                <smev:TypeCode>GFNC</smev:TypeCode>
+                <smev:Status>REQUEST</smev:Status>
+                <smev:Date>2015-02-19T09:48:46.9153051+03:00</smev:Date>
+                <smev:ExchangeType>2</smev:ExchangeType>
+                <smev:CaseNumber>123</smev:CaseNumber>
+                <smev:TestMsg/>
+            </smev:Message>
+            <smev:MessageData xmlns:smev="http://smev.gosuslugi.ru/rev120315">
+                <smev:AppDocument>
+                    <smev:RequestCode>req_c801ccf5-2593-4b84-9f34-1432f35fdf51</smev:RequestCode>
+                    <smev:BinaryData>
+                        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
+                    </smev:BinaryData>
+                </smev:AppDocument>
+            </smev:MessageData>
+        </InputMsgSendRequest>
+    </soap-env:Body>
+</soap-env:Envelope>

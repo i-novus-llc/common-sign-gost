@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<S:Envelope xmlns:S="http://www.w3.org/2003/05/soap-envelope"
+            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">
+    <S:Header/>
+    <S:Body wsu:Id="body">
+        <ns3:PRPA_IN201301RU02 xmlns:ns3="urn:hl7-org:v3" ITSVersion="XML_1.0">
+            <ns3:id extension="3894332e-e6e1-4531-b1c6-95dd1362bde6" root="1.2.643.5.1.13.3.25.1.1"/>
+            <ns3:creationTime value="20180919052951"/>
+            <ns3:interactionId extension="PRPA_IN201301RU02" root="1.2.643.5.1.13.2.7.3"/>
+            <ns3:processingCode code="P"/>
+            <ns3:processingModeCode code="T"/>
+            <ns3:acceptAckCode code="AL"/>
+            <ns3:receiver typeCode="RCV">
+                <ns3:device classCode="DEV" determinerCode="INSTANCE">
+                    <ns3:id root="d5a0f9c0-5db4-11e3-949a-0800200c9a66"/>
+                    <ns3:name>ИЭМК</ns3:name>
+                    <ns3:asAgent classCode="ASSIGNED">
+                        <ns3:representedOrganization classCode="ORG" determinerCode="INSTANCE">
+                            <ns3:id root="1.2.643.5.1.13"/>
+                            <ns3:name>МЗ РФ</ns3:name>
+                        </ns3:representedOrganization>
+                    </ns3:asAgent>
+                </ns3:device>
+            </ns3:receiver>
+            <ns3:sender typeCode="SND">
+                <ns3:device classCode="DEV" determinerCode="INSTANCE">
+                    <ns3:id root="e3be5f87-38bf-428d-885d-9879438c7f18"/>
+                    <ns3:name>ЕГИСЗ МЗ РФ</ns3:name>
+                    <ns3:asAgent classCode="ASSIGNED">
+                        <ns3:representedOrganization classCode="ORG" determinerCode="INSTANCE">
+                            <ns3:id root="1.2.643.5.1.13.3.25.1.1"/>
+                            <ns3:name>ГБУЗ РА "Майкопская городская поликлиника №3"</ns3:name>
+                        </ns3:representedOrganization>
+                    </ns3:asAgent>
+                </ns3:device>
+            </ns3:sender>
+            <ns3:controlActProcess classCode="CACT" moodCode="EVN">
+                <ns3:subject typeCode="SUBJ">
+                    <ns3:registrationEvent classCode="REG" moodCode="EVN">
+                        <ns3:id nullFlavor="NA"/>
+                        <ns3:statusCode code="active"/>
+                        <ns3:subject1 typeCode="SBJ">
+                            <ns3:patient classCode="PAT">
+                                <ns3:id extension="af6a43e3-4d3a-411d-b8a6-d40adffc2c0a"
+                                        root="1.2.643.5.1.13.3.25.1.1"/>
+                                <ns3:statusCode code="active"/>
+                                <ns3:patientPerson>
+                                    <ns3:name>
+                                        <ns3:family>Админов</ns3:family>
+                                        <ns3:given>Админ</ns3:given>
+                                        <ns3:given>Админович</ns3:given>
+                                    </ns3:name>
+                                    <ns3:administrativeGenderCode code="1" codeSystem="1.2.643.5.1.13.2.1.1.156"/>
+                                    <ns3:birthTime value="19800503"/>
+                                    <ns3:asOtherIDs classCode="IDENT">
+                                        <ns3:documentType code="5" codeSystem="1.2.643.5.1.13.2.7.1.62"
+                                                          displayName="Документ, удостоверяющий личность">
+                                            <ns3:qualifier>
+                                                <ns3:name code="14" codeSystem="1.2.643.5.1.13.2.1.1.498"
+                                                          codeSystemName="Классификатор документов, удостоверяющих личность гражданина Российской Федерации"
+                                                          displayName="Паспорт гражданина РФ"/>
+                                            </ns3:qualifier>
+                                        </ns3:documentType>
+                                        <ns3:documentNumber number="9206662113"/>
+                                        <ns3:scopingOrganization classCode="ORG" determinerCode="INSTANCE">
+                                            <ns3:id nullFlavor="NI"/>
+                                            <ns3:name>УВД Советского района гор. Казани</ns3:name>
+                                        </ns3:scopingOrganization>
+                                    </ns3:asOtherIDs>
+                                    <ns3:asOtherIDs classCode="IDENT">
+                                        <ns3:documentType code="3" codeSystem="1.2.643.5.1.13.2.7.1.62"/>
+                                        <ns3:documentNumber number="03480134121"/>
+                                        <ns3:scopingOrganization classCode="ORG" determinerCode="INSTANCE">
+                                            <ns3:id nullFlavor="NI"/>
+                                        </ns3:scopingOrganization>
+                                    </ns3:asOtherIDs>
+                                </ns3:patientPerson>
+                                <ns3:providerOrganization classCode="ORG" determinerCode="INSTANCE">
+                                    <ns3:id root="1.2.643.5.1.13.3.25.1.1"/>
+                                    <ns3:name>ГБУЗ РА "Майкопская городская поликлиника №3"</ns3:name>
+                                    <ns3:contactParty classCode="CON">
+                                        <ns3:telecom value="tel:+7-987-456-123"/>
+                                    </ns3:contactParty>
+                                </ns3:providerOrganization>
+                            </ns3:patient>
+                        </ns3:subject1>
+                        <ns3:custodian typeCode="CST">
+                            <ns3:assignedEntity classCode="ASSIGNED">
+                                <ns3:id root="1.2.643.5.1.13.3.25.1.1"/>
+                                <ns3:assignedOrganization classCode="ORG" determinerCode="INSTANCE">
+                                    <ns3:name>ГБУЗ РА "Майкопская городская поликлиника №3"</ns3:name>
+                                </ns3:assignedOrganization>
+                            </ns3:assignedEntity>
+                        </ns3:custodian>
+                    </ns3:registrationEvent>
+                </ns3:subject>
+            </ns3:controlActProcess>
+        </ns3:PRPA_IN201301RU02>
+    </S:Body>
+</S:Envelope>

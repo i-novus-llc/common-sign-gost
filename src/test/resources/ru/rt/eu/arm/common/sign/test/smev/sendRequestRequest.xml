@@ -1,0 +1,20 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+        <ns2:SendRequestRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
+                                xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+            <ns2:SenderProvidedRequestData Id="SIGNED">
+                <ns2:MessageID>1a77671a-bcc2-11e8-bb3a-6149e818f8fe</ns2:MessageID>
+                <MessagePrimaryContent>
+                    <CnsiRequest xmlns="urn://x-artefacts-smev-gov-ru/esnsi/smev-integration/read/1.0.0">
+                        <Structure>
+                            <revisionRef>
+                                <id>281</id>
+                                <revision>1</revision>
+                            </revisionRef>
+                        </Structure>
+                    </CnsiRequest>
+                </MessagePrimaryContent>
+            </ns2:SenderProvidedRequestData>
+        </ns2:SendRequestRequest>
+    </soap:Body>
+</soap:Envelope>

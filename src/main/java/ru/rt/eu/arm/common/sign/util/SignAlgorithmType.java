@@ -1,0 +1,98 @@
+package ru.rt.eu.arm.common.sign.util;
+
+import lombok.Getter;
+
+import java.security.PublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
+public enum SignAlgorithmType {
+    RSA(2048),
+    ECGOST3410(256),
+    ECGOST3410_2012_256(256),
+    ECGOST3410_2012_512(512);
+
+    private static final Map<String, String> bcNames;
+    private static final Map<String, String> digestUris;
+    private static final Map<String, String> digestUrns;
+    private static final Map<String, String> signUris;
+    private static final Map<String, String> signUrns;
+
+    private static final String ECGOST3410_2012 = "ECGOST3410-2012";
+
+    private int keySize;
+
+    static {
+        bcNames = new HashMap<>();
+        bcNames.put(RSA.name(), RSA.name());
+        bcNames.put(ECGOST3410.name(), ECGOST3410.name());
+        bcNames.put(ECGOST3410_2012_256.name(), ECGOST3410_2012);
+        bcNames.put(ECGOST3410_2012_512.name(), ECGOST3410_2012);
+
+        //Без RSA!
+        digestUris = new HashMap<>();
+        digestUris.put(ECGOST3410.name(), GostIds.GOST3411_URI);
+        digestUris.put(ECGOST3410_2012_256.name(), GostIds.GOST3411_2012_256_URI);
+        digestUris.put(ECGOST3410_2012_512.name(), GostIds.GOST3411_2012_512_URI);
+
+        digestUrns = new HashMap<>();
+        digestUrns.put(ECGOST3410.name(), GostIds.GOST3411_URN);
+        digestUrns.put(ECGOST3410_2012_256.name(), GostIds.GOST3411_2012_256_URN);
+        digestUrns.put(ECGOST3410_2012_512.name(), GostIds.GOST3411_2012_512_URN);
+
+        signUris = new HashMap<>();
+        signUris.put(ECGOST3410.name(), GostIds.GOST3410_2001_URI);
+        signUris.put(ECGOST3410_2012_256.name(), GostIds.GOST3410_2012_256_URI);
+        signUris.put(ECGOST3410_2012_512.name(), GostIds.GOST3410_2012_512_URI);
+
+        signUrns = new HashMap<>();
+        signUrns.put(ECGOST3410.name(), GostIds.GOST3410_2001_URN);
+        signUrns.put(ECGOST3410_2012_256.name(), GostIds.GOST3410_2012_256_URN);
+        signUrns.put(ECGOST3410_2012_512.name(), GostIds.GOST3410_2012_512_URN);
+    }
+
+    SignAlgorithmType(int keySize) {
+        this.keySize = keySize;
+    }
+
+    public static SignAlgorithmType valueOf(PublicKey publicKey) {
+        String algorithm = publicKey.getAlgorithm();
+        if (RSA.name().equals(algorithm)) {
+            return RSA;
+        } else if (ECGOST3410.name().equals(algorithm)) {
+            return ECGOST3410;
+        } else if (ECGOST3410_2012.equals(algorithm) && publicKey instanceof ECPublicKey) {
+            if (((ECPublicKey) publicKey).getParams().getOrder().bitLength() <= 256) {
+                return ECGOST3410_2012_256;
+            }
+            return ECGOST3410_2012_512;
+        }
+        throw new IllegalArgumentException("Unsupported public key algorithm: " + algorithm);
+    }
+
+    public String bouncyKeyAlgorithmName() {
+        return bcNames.get(name());
+    }
+
+    public String bouncySignatureAlgorithmName() {
+        return name().replaceAll("_", "-");
+    }
+
+    public String digestUrn() {
+        return digestUrns.get(name());
+    }
+
+    public String digestUri() {
+        return digestUris.get(name());
+    }
+
+    public String signUrn() {
+        return signUrns.get(name());
+    }
+
+    public String signUri() {
+        return signUris.get(name());
+    }
+}

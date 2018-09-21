@@ -1,0 +1,59 @@
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+    <soap:Header>
+        <Action xmlns="http://www.w3.org/2005/08/addressing"
+                xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                wsu:Id="id-4554243" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">urn:hl7-org:v3:MCCI_IN000002
+        </Action>
+        <MessageID xmlns="http://www.w3.org/2005/08/addressing"
+                   xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                   wsu:Id="id-4554245" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+            urn:uuid:1be3a179-31a0-4ddd-b96a-baa995c3f003
+        </MessageID>
+        <To xmlns="http://www.w3.org/2005/08/addressing"
+            xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+            wsu:Id="id-4554244" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+            http://www.w3.org/2005/08/addressing/anonymous
+        </To>
+        <RelatesTo xmlns="http://www.w3.org/2005/08/addressing"
+                   xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+                   wsu:Id="id-4554246" xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+            uuid:528f0f29-55da-4298-969b-6d24bc639c10
+        </RelatesTo>
+    </soap:Header>
+    <soap:Body xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+               wsu:Id="id-4554242">
+        <ns3:MCCI_IN000002UV01 xmlns:ns3="urn:hl7-org:v3" ITSVersion="XML_1.0">
+            <ns3:id extension="c23aa48d-785c-49d8-a52c-2299dfc9c3fc"
+                    root="ti8q1f2x-jr7g-1sjx-cy6n-u3diwj030krxz2lg8sm4gd005p14i"/>
+            <ns3:creationTime value="20180919173007"/>
+            <ns3:interactionId extension="MCCIIN000002UV01"
+                               root="ti8q1f2x-jr7g-1sjx-cy6n-u3diwj030krxz2lg8sm4gd005p14i"/>
+            <ns3:processingCode code="P"/>
+            <ns3:processingModeCode code="T"/>
+            <ns3:acceptAckCode code="NE"/>
+            <ns3:receiver typeCode="RCV">
+                <ns3:telecom/>
+                <ns3:device classCode="DEV" determinerCode="INSTANCE">
+                    <ns3:id root="e3be5f87-38bf-428d-885d-9879438c7f18"/>
+                </ns3:device>
+            </ns3:receiver>
+            <ns3:sender typeCode="SND">
+                <ns3:device classCode="DEV" determinerCode="INSTANCE">
+                    <ns3:id root="ti8q1f2x-jr7g-1sjx-cy6n-u3diwj030krxz2lg8sm4gd005p14i"/>
+                </ns3:device>
+            </ns3:sender>
+            <ns3:acknowledgement>
+                <ns3:typeCode code="CA"/>
+                <ns3:targetMessage>
+                    <ns3:id extension="3894332e-e6e1-4531-b1c6-95dd1362bde6" root="1.2.643.5.1.13.3.25.1.1"/>
+                </ns3:targetMessage>
+                <ns3:acknowledgementDetail typeCode="I">
+                    <ns3:code
+                            codeSystemName="Пациент [Patient(moId: [1.2.643.5.1.13.3.25.1.1], patientId: [af6a43e3-4d3a-411d-b8a6-d40adffc2c0a])] обработан успешно"
+                            displayName="Пациент [Patient(moId: [1.2.643.5.1.13.3.25.1.1], patientId: [af6a43e3-4d3a-411d-b8a6-d40adffc2c0a])] обработан успешно"/>
+                    <ns3:location>Patient(moId: [1.2.643.5.1.13.3.25.1.1], patientId: [af6a43e3-4d3a-411d-b8a6-d40adffc2c0a])</ns3:location>
+                </ns3:acknowledgementDetail>
+            </ns3:acknowledgement>
+        </ns3:MCCI_IN000002UV01>
+    </soap:Body>
+</soap:Envelope>
