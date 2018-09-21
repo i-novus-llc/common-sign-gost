@@ -1,28 +1,23 @@
 package ru.rt.eu.arm.common.sign.util;
 
-import lombok.Getter;
-
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-@Getter
 public enum SignAlgorithmType {
-    RSA(2048),
-    ECGOST3410(256),
-    ECGOST3410_2012_256(256),
-    ECGOST3410_2012_512(512);
+    RSA,
+    ECGOST3410,
+    ECGOST3410_2012_256,
+    ECGOST3410_2012_512;
 
     private static final Map<String, String> bcNames;
     private static final Map<String, String> digestUris;
     private static final Map<String, String> digestUrns;
     private static final Map<String, String> signUris;
     private static final Map<String, String> signUrns;
+    private static final Map<String, List<String>> parameterSpecNames;
 
     private static final String ECGOST3410_2012 = "ECGOST3410-2012";
-
-    private int keySize;
 
     static {
         bcNames = new HashMap<>();
@@ -51,10 +46,14 @@ public enum SignAlgorithmType {
         signUrns.put(ECGOST3410.name(), GostIds.GOST3410_2001_URN);
         signUrns.put(ECGOST3410_2012_256.name(), GostIds.GOST3410_2012_256_URN);
         signUrns.put(ECGOST3410_2012_512.name(), GostIds.GOST3410_2012_512_URN);
-    }
 
-    SignAlgorithmType(int keySize) {
-        this.keySize = keySize;
+        parameterSpecNames = new HashMap<>();
+        parameterSpecNames.put(RSA.name(), Collections.emptyList());
+        parameterSpecNames.put(ECGOST3410.name(), Arrays.asList("GostR3410-2001-CryptoPro-A", "GostR3410-2001-CryptoPro-B",
+                "GostR3410-2001-CryptoPro-C", "GostR3410-2001-CryptoPro-XchA", "GostR3410-2001-CryptoPro-XchB"));
+        parameterSpecNames.put(ECGOST3410_2012_256.name(), Collections.singletonList("Tc26-Gost-3410-12-256-paramSetA"));
+        parameterSpecNames.put(ECGOST3410_2012_512.name(), Arrays.asList("Tc26-Gost-3410-12-512-paramSetA",
+                "Tc26-Gost-3410-12-512-paramSetB", "Tc26-Gost-3410-12-512-paramSetC"));
     }
 
     public static SignAlgorithmType valueOf(PublicKey publicKey) {
@@ -94,5 +93,9 @@ public enum SignAlgorithmType {
 
     public String signUri() {
         return signUris.get(name());
+    }
+
+    public List<String> getAvailableParameterSpecificationNames() {
+        return Collections.unmodifiableList(parameterSpecNames.get(name()));
     }
 }

@@ -75,11 +75,6 @@ public final class Smev3RequestSigner {
         Node actionNode = null;
         if (soapBody.getElementsByTagNameNS(SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS, "SendRequestRequest").getLength() > 0) {           // SendRequest
             actionNode = soapBody.getElementsByTagNameNS(SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS, "SendRequestRequest").item(0);
-            /*NodeList messagePrimaryContent = soapBody.getElementsByTagNameNS(NS1, "MessagePrimaryContent");
-            //Правим сообщение
-            envelope.addNamespaceDeclaration("ns1", NS1);
-            envelope.addNamespaceDeclaration("ns2", SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS);
-            messagePrimaryContent.item(0).setPrefix("ns1");*/
         } else if (soapBody.getElementsByTagNameNS(SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS, "SendReponseRequest").getLength() > 0) {    // SendResponse
             actionNode = soapBody.getElementsByTagNameNS(SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS, "SendReponseRequest").item(0);
         } else if (soapBody.getElementsByTagNameNS(SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS, "GetResponseRequest").getLength() > 0) {    // GetResponse

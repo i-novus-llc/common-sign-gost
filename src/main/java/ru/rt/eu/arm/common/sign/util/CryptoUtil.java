@@ -5,6 +5,7 @@ import org.bouncycastle.crypto.ExtendedDigest;
 import org.bouncycastle.crypto.digests.GOST3411Digest;
 import org.bouncycastle.crypto.digests.GOST3411_2012_256Digest;
 import org.bouncycastle.crypto.digests.GOST3411_2012_512Digest;
+import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.MessageFormat;
 import java.util.Base64;
 
 @Slf4j
@@ -27,10 +29,29 @@ public final class CryptoUtil {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static KeyPair generateKeyPair(SignAlgorithmType signAlgorithmType) throws NoSuchAlgorithmException, NoSuchProviderException {
+    public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName) throws
+            NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME);
-        keyGen.initialize(signAlgorithmType.getKeySize());
-//        keyGen.initialize(1024);
+
+        String selectedParamSpec = null;
+        if (parameterSpecName == null) {
+            if (!signAlgorithmType.getAvailableParameterSpecificationNames().isEmpty()) {
+                selectedParamSpec = signAlgorithmType.getAvailableParameterSpecificationNames().get(0);
+            }
+        } else {
+            if (!signAlgorithmType.getAvailableParameterSpecificationNames().contains(parameterSpecName)) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        "Parameter specification name {0} is not supported for algorithm {1}. Supported values: {2}",
+                        parameterSpecName, signAlgorithmType.name(), signAlgorithmType.getAvailableParameterSpecificationNames()));
+            } else {
+                selectedParamSpec = parameterSpecName;
+            }
+        }
+
+        logger.info("selected parameter specification name: {}", selectedParamSpec);
+        if (selectedParamSpec != null) {
+            keyGen.initialize(ECGOST3410NamedCurveTable.getParameterSpec(selectedParamSpec));
+        }
 
         KeyPair keyPair = keyGen.generateKeyPair();
         PrivateKey priv = keyPair.getPrivate();
@@ -76,8 +97,8 @@ public final class CryptoUtil {
     /**
      * Подписывает данные ЭЦП по ГОСТ 34.10 и кодирует ее в base64
      *
-     * @param data входные данные
-     * @param key закрытый ключ в base64
+     * @param data              входные данные
+     * @param key               закрытый ключ в base64
      * @param signAlgorithmType параметры алгоритма подписи
      * @return подпись в base64
      * @throws GeneralSecurityException исключении о невозможности использования переданного ключа и алгоритма подписи с поддерживаемым криптопровайдером
