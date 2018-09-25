@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.smev;
+package ru.i_novus.common.sign.smev;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.exceptions.XMLSecurityException;
@@ -7,10 +7,10 @@ import org.apache.xml.security.transforms.Transforms;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import ru.rt.eu.arm.common.sign.GostXmlSignature;
-import ru.rt.eu.arm.common.sign.Init;
-import ru.rt.eu.arm.common.sign.util.CryptoUtil;
-import ru.rt.eu.arm.common.sign.util.SignAlgorithmType;
+import ru.i_novus.common.sign.GostXmlSignature;
+import ru.i_novus.common.sign.Init;
+import ru.i_novus.common.sign.util.CryptoUtil;
+import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
 import javax.xml.soap.SOAPBody;

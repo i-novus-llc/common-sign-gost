@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.util;
+package ru.i_novus.common.sign.util;
 
 /**
  * Идентификаторы ГОСТ-алгоритмов

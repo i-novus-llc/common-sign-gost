@@ -9,7 +9,7 @@ import javax.xml.crypto.dsig.DigestMethod;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.spec.DigestMethodParameterSpec;
 import org.w3c.dom.Element;
-import ru.rt.eu.arm.common.sign.util.GostIds;
+import ru.i_novus.common.sign.util.GostIds;
 
 
 /**

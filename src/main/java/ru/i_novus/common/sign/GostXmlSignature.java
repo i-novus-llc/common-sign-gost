@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign;
+package ru.i_novus.common.sign;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.c14n.CanonicalizationException;
@@ -7,8 +7,8 @@ import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xpath.XPathAPI;
-import ru.rt.eu.arm.common.sign.util.CryptoUtil;
-import ru.rt.eu.arm.common.sign.util.SignAlgorithmType;
+import ru.i_novus.common.sign.util.CryptoUtil;
+import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPElement;

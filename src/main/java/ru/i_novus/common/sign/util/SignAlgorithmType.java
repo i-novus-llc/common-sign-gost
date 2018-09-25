@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.util;
+package ru.i_novus.common.sign.util;
 
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;

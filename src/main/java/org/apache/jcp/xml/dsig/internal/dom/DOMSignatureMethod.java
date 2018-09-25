@@ -26,7 +26,7 @@ import org.apache.jcp.xml.dsig.internal.SignerOutputStream;
 import org.apache.xml.security.algorithms.implementations.SignatureECDSA;
 import org.apache.xml.security.utils.JavaUtils;
 import org.w3c.dom.Element;
-import ru.rt.eu.arm.common.sign.util.GostIds;
+import ru.i_novus.common.sign.util.GostIds;
 
 /**
  * DOM-based abstract implementation of SignatureMethod.

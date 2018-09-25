@@ -1,12 +1,12 @@
-package ru.rt.eu.arm.common.sign.smev;
+package ru.i_novus.common.sign.smev;
 
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
-import ru.rt.eu.arm.common.sign.GostXmlSignature;
-import ru.rt.eu.arm.common.sign.Init;
-import ru.rt.eu.arm.common.sign.util.SignAlgorithmType;
+import ru.i_novus.common.sign.GostXmlSignature;
+import ru.i_novus.common.sign.Init;
+import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
@@ -15,9 +15,9 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.DS_NS;
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.WSSE_NS;
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.WSU_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.DS_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.WSSE_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.WSU_NS;
 
 public final class Smev2RequestSigner {
     private Smev2RequestSigner() {

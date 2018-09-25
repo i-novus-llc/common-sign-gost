@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign;
+package ru.i_novus.common.sign;
 
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.algorithms.JCEMapper;
@@ -7,8 +7,8 @@ import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transform;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import ru.rt.eu.arm.common.sign.smev.SmevTransformSpi;
-import ru.rt.eu.arm.common.sign.util.GostIds;
+import ru.i_novus.common.sign.smev.SmevTransformSpi;
+import ru.i_novus.common.sign.util.GostIds;
 
 import java.security.Security;
 

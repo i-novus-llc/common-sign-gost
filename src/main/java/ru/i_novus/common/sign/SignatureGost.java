@@ -1,9 +1,9 @@
-package ru.rt.eu.arm.common.sign;
+package ru.i_novus.common.sign;
 
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.algorithms.SignatureAlgorithmSpi;
 import org.apache.xml.security.signature.XMLSignatureException;
-import ru.rt.eu.arm.common.sign.util.GostIds;
+import ru.i_novus.common.sign.util.GostIds;
 
 import java.security.*;
 import java.security.spec.AlgorithmParameterSpec;

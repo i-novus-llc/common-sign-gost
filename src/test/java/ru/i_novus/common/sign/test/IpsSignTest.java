@@ -1,9 +1,9 @@
-package ru.rt.eu.arm.common.sign.test;
+package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.w3c.dom.NodeList;
-import ru.rt.eu.arm.common.sign.ips.IpsRequestSigner;
+import ru.i_novus.common.sign.ips.IpsRequestSigner;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
@@ -11,7 +11,7 @@ import javax.xml.soap.SOAPMessage;
 import java.io.InputStream;
 
 import static org.junit.Assert.*;
-import static ru.rt.eu.arm.common.sign.test.SoapUtil.getSoapMessageContent;
+import static ru.i_novus.common.sign.test.SoapUtil.getSoapMessageContent;
 
 @Slf4j
 public class IpsSignTest {
@@ -85,12 +85,12 @@ public class IpsSignTest {
     }
 
     private SOAPMessage getIpsTestRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/ips/request.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/ips/request.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_2_PROTOCOL);
     }
 
     private SOAPMessage getIpsTestResponse() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/ips/response.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/ips/response.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_2_PROTOCOL);
     }
 

@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.util;
+package ru.i_novus.common.sign.util;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;

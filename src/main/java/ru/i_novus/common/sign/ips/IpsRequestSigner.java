@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.ips;
+package ru.i_novus.common.sign.ips;
 
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
@@ -6,9 +6,9 @@ import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Node;
-import ru.rt.eu.arm.common.sign.GostXmlSignature;
-import ru.rt.eu.arm.common.sign.Init;
-import ru.rt.eu.arm.common.sign.util.SignAlgorithmType;
+import ru.i_novus.common.sign.GostXmlSignature;
+import ru.i_novus.common.sign.Init;
+import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
@@ -18,9 +18,9 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.UUID;
 
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.DS_NS;
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.WSSE_NS;
-import static ru.rt.eu.arm.common.sign.GostXmlSignature.WSU_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.DS_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.WSSE_NS;
+import static ru.i_novus.common.sign.GostXmlSignature.WSU_NS;
 
 public final class IpsRequestSigner {
     private static final String WSA_NS = "http://www.w3.org/2005/08/addressing";

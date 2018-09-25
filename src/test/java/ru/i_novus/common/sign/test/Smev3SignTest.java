@@ -1,9 +1,9 @@
-package ru.rt.eu.arm.common.sign.test;
+package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.junit.Test;
-import ru.rt.eu.arm.common.sign.smev.Smev3RequestSigner;
+import ru.i_novus.common.sign.smev.Smev3RequestSigner;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPException;
@@ -15,7 +15,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.Assert.assertNotNull;
-import static ru.rt.eu.arm.common.sign.test.SoapUtil.getSoapMessageContent;
+import static ru.i_novus.common.sign.test.SoapUtil.getSoapMessageContent;
 
 @Slf4j
 public class Smev3SignTest {
@@ -58,27 +58,27 @@ public class Smev3SignTest {
     }
 
     private SOAPMessage getAckRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/smev/ackRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/ackRequest.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_1_PROTOCOL);
     }
 
     private SOAPMessage getGetRequestRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/smev/getRequestRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/getRequestRequest.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_1_PROTOCOL);
     }
 
     private SOAPMessage getGetResponseRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/smev/getResponseRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/getResponseRequest.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_1_PROTOCOL);
     }
 
     private SOAPMessage getSendRequestRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/smev/sendRequestRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/sendRequestRequest.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_1_PROTOCOL);
     }
 
     private SOAPMessage getSendResponseRequest() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/rt/eu/arm/common/sign/test/smev/sendResponseRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/sendResponseRequest.xml");
         return SoapUtil.constructMessage(inputStream, SOAPConstants.SOAP_1_1_PROTOCOL);
     }
 }

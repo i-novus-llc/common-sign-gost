@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.smev;
+package ru.i_novus.common.sign.smev;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.signature.XMLSignatureInput;

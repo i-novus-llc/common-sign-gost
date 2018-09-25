@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.test;
+package ru.i_novus.common.sign.test;
 
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.SOAPException;

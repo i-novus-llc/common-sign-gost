@@ -1,4 +1,4 @@
-package ru.rt.eu.arm.common.sign.test;
+package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -7,9 +7,9 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.Test;
-import ru.rt.eu.arm.common.sign.util.CryptoIO;
-import ru.rt.eu.arm.common.sign.util.CryptoUtil;
-import ru.rt.eu.arm.common.sign.util.SignAlgorithmType;
+import ru.i_novus.common.sign.util.CryptoIO;
+import ru.i_novus.common.sign.util.CryptoUtil;
+import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import java.io.IOException;
 import java.nio.file.*;
