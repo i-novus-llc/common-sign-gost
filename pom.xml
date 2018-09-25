@@ -26,6 +26,13 @@
         <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://git.i-novus.ru/util/common-sign.git</connection>
+        <url>https://git.i-novus.ru/util/common-sign</url>
+        <developerConnection>scm:git:https://git.i-novus.ru/util/common-sign.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -109,6 +116,11 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
             </plugin>
         </plugins>
     </build>
