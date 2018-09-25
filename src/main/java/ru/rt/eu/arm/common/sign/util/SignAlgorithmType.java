@@ -78,6 +78,18 @@ public enum SignAlgorithmType {
         throw new IllegalArgumentException("Unsupported public key algorithm: " + algorithm);
     }
 
+    public static SignAlgorithmType findByAlgorithmName(String algorithmName) {
+        SignAlgorithmType algorithm = null;
+        for (SignAlgorithmType algorithmType : SignAlgorithmType.values()) {
+            if (algorithmName.endsWith(algorithmType.bouncySignatureAlgorithmName())) {
+                algorithm = algorithmType;
+            }
+        }
+        if (algorithm == null)
+            throw new IllegalArgumentException("Unsupported public key algorithm: " + algorithmName);
+        return algorithm;
+    }
+
     public String bouncyKeyAlgorithmName() {
         return bcNames.get(name());
     }

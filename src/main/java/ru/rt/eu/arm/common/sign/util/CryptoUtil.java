@@ -1,6 +1,5 @@
 package ru.rt.eu.arm.common.sign.util;
 
-import com.sun.istack.internal.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
@@ -26,7 +25,6 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -108,7 +106,7 @@ public final class CryptoUtil {
      * @throws OperatorCreationException ошибка формирования сертификата
      */
     public static X509CertificateHolder selfSignedCertificate(String x509Name, KeyPair keyPair, SignAlgorithmType signAlgorithm,
-                                                              @Nullable Date validFrom, @Nullable Date validTo)
+                                                              Date validFrom, Date validTo)
             throws IOException, OperatorCreationException {
         X500Name name = new X500Name(x509Name);
         AsymmetricKeyParameter privateKeyParameter = null;
@@ -151,7 +149,7 @@ public final class CryptoUtil {
         AlgorithmIdentifier signAlgId = signatureAlgorithmIdentifierFinder.find(signAlgorithm.signatureAlgorithmName());
         AlgorithmIdentifier digestAlgId = digestAlgorithmIdentifierFinder.find(signAlgId);
 
-        BcContentSignerBuilder signerBuilder = null;
+        BcContentSignerBuilder signerBuilder;
         if (keyPair.getPublic() instanceof ECPublicKey) {
             signerBuilder = new BcECContentSignerBuilder(signAlgId, digestAlgId);
         } else {
@@ -227,8 +225,8 @@ public final class CryptoUtil {
      * @param key закрытый ключ в base64 (PEM-формат в base64)
      * @return закрытый ключ PKCS#8
      */
-    public static byte[] decodePem(String key) {
-        String pem = new String(Base64.getDecoder().decode(key), StandardCharsets.UTF_8);
+    public static byte[] decodePem(final String key) {
+        String pem = key;
         try {
             pem = pem.replace(pem.substring(pem.indexOf("-----END"), pem.lastIndexOf("-----") + 5), "");
         } catch (Exception ignore) {

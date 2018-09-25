@@ -21,5 +21,6 @@ public final class GostIds {
     public static final String GOST3410_2012_512_URN = "urn:ietf:params:xml:ns:cpxmlsec:algorithms:gostr34102012-gostr34112012-512";
 
     private GostIds() {
+        // не позволяет создать экземпляр класса, класс утилитный
     }
 }
