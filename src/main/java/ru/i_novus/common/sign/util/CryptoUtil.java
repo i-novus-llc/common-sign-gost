@@ -180,6 +180,16 @@ public final class CryptoUtil {
      * @return хэш в base64
      */
     public static String getBase64Digest(String data, SignAlgorithmType signAlgorithmType) {
+        return new String(Base64.getEncoder().encode(getDigest(data.getBytes(), signAlgorithmType)));
+    }
+
+    /**
+     * Формирует хэш данных для заданного алгоритма
+     *
+     * @param data входные данные
+     * @return хэш в base64
+     */
+    public static byte[] getDigest(byte[] data, SignAlgorithmType signAlgorithmType) {
         ExtendedDigest digest;
         switch (signAlgorithmType) {
             case ECGOST3410:
@@ -194,10 +204,10 @@ public final class CryptoUtil {
             default:
                 throw new IllegalArgumentException("Unsupported Digest Algorithm: " + signAlgorithmType);
         }
-        digest.update(data.getBytes(), 0, data.getBytes().length);
+        digest.update(data, 0, data.length);
         byte[] resBuf = new byte[digest.getDigestSize()];
         digest.doFinal(resBuf, 0);
-        return new String(Base64.getEncoder().encode(resBuf));
+        return resBuf;
     }
 
     /**

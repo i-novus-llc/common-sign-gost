@@ -60,10 +60,7 @@ public class CryptoTest {
         jcaConverter.setProvider(BouncyCastleProvider.PROVIDER_NAME);
         X509Certificate certificate = jcaConverter.getCertificate(certificateHolder);
 
-        DefaultSignatureAlgorithmIdentifierFinder algorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
-        algorithmIdentifierFinder.find(certificate.getSigAlgName());
-
-        String signature = CryptoUtil.getBase64Signature(TEST_DATA_TO_SIGN,
+        CryptoUtil.getBase64Signature(TEST_DATA_TO_SIGN,
                 new String(Base64.getEncoder().encode(keySpec.getEncoded())), SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName()));
 
         logger.info("Path to certificates and keys: {}", basePath);
