@@ -40,7 +40,7 @@ import java.util.Date;
 @Slf4j
 public final class CryptoUtil {
 
-    public static final String CRYPTO_PROVIDER_NAME = "BC";
+    public static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
     static {
         Security.addProvider(new BouncyCastleProvider());

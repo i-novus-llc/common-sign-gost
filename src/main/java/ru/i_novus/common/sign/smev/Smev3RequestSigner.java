@@ -36,8 +36,8 @@ public final class Smev3RequestSigner {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static void signSmev3Request(SOAPMessage message, String encodedCertificate, String privateKey) throws NoSuchProviderException,
-            NoSuchAlgorithmException, SOAPException, CertificateException, XMLSecurityException, ClassNotFoundException, InvalidKeySpecException {
+    public static void signSmev3Request(SOAPMessage message, X509Certificate certificate, PrivateKey privateKey)
+            throws SOAPException, XMLSecurityException, ClassNotFoundException {
         SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
         SOAPBody soapBody = envelope.getBody();
         Node actionNode = getActionNode(soapBody);
@@ -56,19 +56,30 @@ public final class Smev3RequestSigner {
             transforms.addTransform(CanonicalizationMethod.EXCLUSIVE);
             transforms.addTransform(SmevTransformSpi.ALGORITHM_URN);
 
-            SignAlgorithmType signAlgorithmType = GostXmlSignature.getSignAlgorithmType(encodedCertificate);
-            PrivateKey pk = KeyFactory.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
-                    .generatePrivate(new PKCS8EncodedKeySpec(CryptoUtil.decodePem(privateKey)));
+            SignAlgorithmType signAlgorithmType = SignAlgorithmType.valueOf(certificate.getPublicKey());
 
             XMLSignature signature = new XMLSignature(soapBody.getOwnerDocument(), "", signAlgorithmType.signUri(), CanonicalizationMethod.EXCLUSIVE);
             signature.addDocument("#" + contentElementId, transforms, signAlgorithmType.digestUri());
 
-            X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
-                    .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(encodedCertificate)));
             signature.addKeyInfo(certificate);
-            signature.sign(pk);
+            signature.sign(privateKey);
             callerSigElement.appendChild(soapBody.getOwnerDocument().importNode(signature.getElement(), true));
         }
+    }
+
+    public static void signSmev3Request(SOAPMessage message, String encodedCertificate, String privateKey) throws NoSuchProviderException,
+            NoSuchAlgorithmException, CertificateException, XMLSecurityException, ClassNotFoundException, InvalidKeySpecException, SOAPException {
+
+        Init.init();
+        SignAlgorithmType signAlgorithmType = GostXmlSignature.getSignAlgorithmType(encodedCertificate);
+
+        PrivateKey pk = KeyFactory.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
+                .generatePrivate(new PKCS8EncodedKeySpec(CryptoUtil.decodePem(privateKey)));
+
+        X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
+                .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(encodedCertificate)));
+
+        signSmev3Request(message, certificate, pk);
     }
 
     private static Node getActionNode(SOAPBody soapBody) {

@@ -30,6 +30,6 @@ final class SoapUtil {
         } catch (SOAPException | IOException e) {
             throw new RuntimeException(e);
         }
-        return outputStream.toString();
+        return outputStream.toString().replace("&#13;", "");
     }
 }

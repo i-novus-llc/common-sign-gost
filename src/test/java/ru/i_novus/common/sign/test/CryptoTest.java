@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.i_novus.common.sign.util.CryptoIO;
 import ru.i_novus.common.sign.util.CryptoUtil;
@@ -24,6 +24,11 @@ import static org.junit.Assert.assertNotNull;
 public class CryptoTest {
     private static final String TEST_CERTIFICATE_CN = "CN=Белов Александр, O=Общество с ограниченной ответственностью \"Ай-Новус\", E=abelov@i-novus.ru, L=Казань, C=RU, STREET=ул. Сеченова 19Б";
     private static final String TEST_DATA_TO_SIGN = "Test data. Необходимо проверить подпись на разных языках";
+
+    @BeforeClass
+    public static void init() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     @Test
     public void testGenerateAndUse() throws Exception {
@@ -53,8 +58,8 @@ public class CryptoTest {
         keyPath = CryptoIO.writePKToFile(keyPair, Paths.get(basePath, keyPath));
         crtPath = CryptoIO.writeCertToFile(certificateHolder, Paths.get(basePath, crtPath));
 
-        certificateHolder = CryptoIO.readCertFromFile(crtPath);
-        PKCS8EncodedKeySpec keySpec = CryptoIO.readPkFromFile(keyPath);
+        certificateHolder = CryptoIO.readCertFromDer(crtPath);
+        PKCS8EncodedKeySpec keySpec = CryptoIO.readPkFromDer(keyPath);
 
         JcaX509CertificateConverter jcaConverter = new JcaX509CertificateConverter();
         jcaConverter.setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -74,5 +79,18 @@ public class CryptoTest {
     private X509CertificateHolder selfSignedCertificate(KeyPair keyPair, SignAlgorithmType signAlgorithm)
             throws IOException, OperatorCreationException {
         return CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, signAlgorithm, null, null);
+    }
+
+    @Test
+    public void testReadFromPkcs() throws Exception {
+        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/first.pfx", "12345678");
+        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/second.pfx", "12345678");
+    }
+
+    private void testByKeysInPKCS12(String path, String password) {
+        PrivateKey privateKey = CryptoIO.readPrivateKeyFromPKCS12(Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(path), password);
+        X509Certificate certificate = CryptoIO.readCertificateFromPKCS12(Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(path), password);
     }
 }

@@ -7,6 +7,7 @@ import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xpath.XPathAPI;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.SignAlgorithmType;
 
@@ -50,7 +51,7 @@ public class GostXmlSignature {
         //Определяем алгоритм подписи
         ByteArrayInputStream certStream = new ByteArrayInputStream(Base64.getDecoder().decode(
                 encodedCertificate.replaceAll("[\r\n]", "")));
-        X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509","BC").generateCertificate(certStream);
+        X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertificate(certStream);
         return SignAlgorithmType.valueOf(certificate.getPublicKey());
     }
 
