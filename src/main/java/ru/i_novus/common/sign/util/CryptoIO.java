@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +22,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 @Slf4j
 public class CryptoIO {
-    private CryptoIO () {
+    private CryptoIO() {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
@@ -74,5 +75,16 @@ public class CryptoIO {
         String alias = ks.aliases().nextElement();
         Certificate[] chain = ks.getCertificateChain(alias);
         return (X509Certificate) chain[chain.length - 1];
+    }
+
+    public static byte[] inputStreamToByteArray(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[1024];
+        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+        buffer.flush();
+        return buffer.toByteArray();
     }
 }

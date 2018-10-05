@@ -59,8 +59,8 @@ public enum SignAlgorithmType {
         signatureAlgorithmNames = new HashMap<>();
         signatureAlgorithmNames.put(RSA.name(), "SHA1WITHRSA");
         signatureAlgorithmNames.put(ECGOST3410.name(), "GOST3411WITHECGOST3410");
-        signatureAlgorithmNames.put(ECGOST3410_2012_256.name(), "GOST3411WITHGOST3410-2012-256");
-        signatureAlgorithmNames.put(ECGOST3410_2012_512.name(), "GOST3411WITHGOST3410-2012-512");
+        signatureAlgorithmNames.put(ECGOST3410_2012_256.name(), "GOST3411-2012-256WITHECGOST3410-2012-256");
+        signatureAlgorithmNames.put(ECGOST3410_2012_512.name(), "GOST3411-2012-512WITHECGOST3410-2012-512");
     }
 
     public static SignAlgorithmType valueOf(PublicKey publicKey) {
@@ -81,8 +81,9 @@ public enum SignAlgorithmType {
     public static SignAlgorithmType findByAlgorithmName(String algorithmName) {
         SignAlgorithmType algorithm = null;
         for (SignAlgorithmType algorithmType : SignAlgorithmType.values()) {
-            if (algorithmName.endsWith(algorithmType.bouncySignatureAlgorithmName())) {
+            if (algorithmName.endsWith(algorithmType.getBouncySignatureAlgorithmName())) {
                 algorithm = algorithmType;
+                break;
             }
         }
         if (algorithm == null)
@@ -90,31 +91,31 @@ public enum SignAlgorithmType {
         return algorithm;
     }
 
-    public String bouncyKeyAlgorithmName() {
+    public String getBouncyKeyAlgorithmName() {
         return bcNames.get(name());
     }
 
-    public String bouncySignatureAlgorithmName() {
+    public String getBouncySignatureAlgorithmName() {
         return name().replaceAll("_", "-");
     }
 
-    public String digestUrn() {
+    public String getDigestUrn() {
         return digestUrns.get(name());
     }
 
-    public String digestUri() {
+    public String getDigestUri() {
         return digestUris.get(name());
     }
 
-    public String signUrn() {
+    public String getSignUrn() {
         return signUrns.get(name());
     }
 
-    public String signUri() {
+    public String getSignUri() {
         return signUris.get(name());
     }
 
-    public String signatureAlgorithmName() {
+    public String getSignatureAlgorithmName() {
         return signatureAlgorithmNames.get(name());
     }
 

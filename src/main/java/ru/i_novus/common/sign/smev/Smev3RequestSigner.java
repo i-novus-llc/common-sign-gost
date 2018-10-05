@@ -58,8 +58,8 @@ public final class Smev3RequestSigner {
 
             SignAlgorithmType signAlgorithmType = SignAlgorithmType.valueOf(certificate.getPublicKey());
 
-            XMLSignature signature = new XMLSignature(soapBody.getOwnerDocument(), "", signAlgorithmType.signUri(), CanonicalizationMethod.EXCLUSIVE);
-            signature.addDocument("#" + contentElementId, transforms, signAlgorithmType.digestUri());
+            XMLSignature signature = new XMLSignature(soapBody.getOwnerDocument(), "", signAlgorithmType.getSignUri(), CanonicalizationMethod.EXCLUSIVE);
+            signature.addDocument("#" + contentElementId, transforms, signAlgorithmType.getDigestUri());
 
             signature.addKeyInfo(certificate);
             signature.sign(privateKey);
@@ -73,7 +73,7 @@ public final class Smev3RequestSigner {
         Init.init();
         SignAlgorithmType signAlgorithmType = GostXmlSignature.getSignAlgorithmType(encodedCertificate);
 
-        PrivateKey pk = KeyFactory.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
+        PrivateKey pk = KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
                 .generatePrivate(new PKCS8EncodedKeySpec(CryptoUtil.decodePem(privateKey)));
 
         X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")

@@ -5,6 +5,9 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cms.*;
+import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.crypto.ExtendedDigest;
 import org.bouncycastle.crypto.digests.GOST3411Digest;
 import org.bouncycastle.crypto.digests.GOST3411_2012_256Digest;
@@ -16,14 +19,18 @@ import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveGenParameterSpec;
 import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcContentSignerBuilder;
 import org.bouncycastle.operator.bc.BcECContentSignerBuilder;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.Store;
 
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
@@ -34,11 +41,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Base64;
-import java.util.Date;
+import java.util.*;
 
 @Slf4j
-public final class CryptoUtil {
+public class CryptoUtil {
 
     public static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
@@ -56,15 +62,15 @@ public final class CryptoUtil {
      * @param signAlgorithmType тип алгоритма
      * @param parameterSpecName наименование спецификации параметров алгоритма
      * @return ключевая пара (открытый и закрытый ключи)
-     * @throws NoSuchAlgorithmException указанный алгоритм не найден
-     * @throws NoSuchProviderException криптопровайдер "Bouncy castle" не инициализирован
+     * @throws NoSuchAlgorithmException           указанный алгоритм не найден
+     * @throws NoSuchProviderException            криптопровайдер "Bouncy castle" не инициализирован
      * @throws InvalidAlgorithmParameterException неверное наименование спецификации параметров алгоритма
      */
     public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName) throws
             NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating keypair, signAlgorithm: {}, parameterSpecName: {}", signAlgorithmType, parameterSpecName);
 
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME);
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME);
         String selectedParamSpec = getParamSpec(signAlgorithmType, parameterSpecName);
 
         logger.info("selected parameter specification name: {}", selectedParamSpec);
@@ -96,13 +102,13 @@ public final class CryptoUtil {
     /**
      * Формирование сертификата в формате X.509 на основе переданной ключевой пары
      *
-     * @param x509Name основные параметры сертификата (должно быть как минимум указано значение CN)
-     * @param keyPair ключевая пара, для которой формируется сертификат
+     * @param x509Name      основные параметры сертификата (должно быть как минимум указано значение CN)
+     * @param keyPair       ключевая пара, для которой формируется сертификат
      * @param signAlgorithm алгоритм подписи
-     * @param validFrom момент времени, с которого будет действителен формируемый сертификат. Если передано null, берется текущее время
-     * @param validTo момент времени, до которого будет действителен формируемый сертификат. Если передано null, берется текущее время + 1 год
+     * @param validFrom     момент времени, с которого будет действителен формируемый сертификат. Если передано null, берется текущее время
+     * @param validTo       момент времени, до которого будет действителен формируемый сертификат. Если передано null, берется текущее время + 1 год
      * @return данные сертификата в формате X.509
-     * @throws IOException оишбка записи данных в формат сертификата
+     * @throws IOException               оишбка записи данных в формат сертификата
      * @throws OperatorCreationException ошибка формирования сертификата
      */
     public static X509CertificateHolder selfSignedCertificate(String x509Name, KeyPair keyPair, SignAlgorithmType signAlgorithm,
@@ -146,7 +152,7 @@ public final class CryptoUtil {
         DefaultSignatureAlgorithmIdentifierFinder signatureAlgorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
         DefaultDigestAlgorithmIdentifierFinder digestAlgorithmIdentifierFinder = new DefaultDigestAlgorithmIdentifierFinder();
 
-        AlgorithmIdentifier signAlgId = signatureAlgorithmIdentifierFinder.find(signAlgorithm.signatureAlgorithmName());
+        AlgorithmIdentifier signAlgId = signatureAlgorithmIdentifierFinder.find(signAlgorithm.getSignatureAlgorithmName());
         AlgorithmIdentifier digestAlgId = digestAlgorithmIdentifierFinder.find(signAlgId);
 
         BcContentSignerBuilder signerBuilder;
@@ -211,7 +217,51 @@ public final class CryptoUtil {
     }
 
     /**
-     * Подписывает данные ЭЦП по ГОСТ 34.10 и кодирует ее в base64
+     * Создание CMS подписи по ГОСТ 34.10
+     *
+     * @param data        входные данные в виде массива байт
+     * @param privateKey  закрытый ключ
+     * @param certificate сертификат ЭП
+     * @return подпись
+     * @throws GeneralSecurityException  исключении о невозможности использования переданного ключа и алгоритма подписи с поддерживаемым криптопровайдером
+     * @throws CMSException              исключение о невозможности формирования подписи CMS по предоставленным данным
+     * @throws OperatorCreationException исключении о невозможнсти использования указаного ключа ЭП
+     * @throws IOException               исключение при формировании массива байт из объекта класса CMSSignedData
+     */
+    public static byte[] getCMSSignature(byte[] data, PrivateKey privateKey, X509Certificate certificate) throws GeneralSecurityException, IOException, CMSException, OperatorCreationException {
+        List<X509Certificate> certList = new ArrayList<>();
+        CMSTypedData msg = new CMSProcessableByteArray(data);
+        certList.add(certificate);
+        Store certs = new JcaCertStore(certList);
+        CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+        ContentSigner signer = new JcaContentSignerBuilder(certificate.getSigAlgName()).setProvider(CRYPTO_PROVIDER_NAME).build(privateKey);
+
+        gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder()
+                .setProvider(CRYPTO_PROVIDER_NAME).build()).build(signer, certificate));
+
+        gen.addCertificates(certs);
+        CMSSignedData sigData = gen.generate(msg, false);
+        return sigData.getEncoded();
+    }
+
+    /**
+     * Подписывает данные ЭП по ГОСТ 34.10
+     *
+     * @param data              входные данные в виде массива байт
+     * @param privateKey        закрытый ключ
+     * @param signAlgorithmType параметры алгоритма подписи
+     * @return подпись
+     * @throws GeneralSecurityException исключении о невозможности использования переданного ключа и алгоритма подписи с поддерживаемым криптопровайдером
+     */
+    public static byte[] getSignature(byte[] data, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
+        Signature signature = Signature.getInstance(signAlgorithmType.getSignatureAlgorithmName(), CRYPTO_PROVIDER_NAME);
+        signature.initSign(privateKey);
+        signature.update(data);
+        return signature.sign();
+    }
+
+    /**
+     * Подписывает данные ЭП по ГОСТ 34.10 и кодирует ее в base64
      *
      * @param data              входные данные
      * @param key               закрытый ключ в base64
@@ -221,11 +271,8 @@ public final class CryptoUtil {
      */
     public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(decodePem(key));
-        PrivateKey privateKey = KeyFactory.getInstance(signAlgorithmType.bouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME).generatePrivate(privateKeySpec);
-        Signature signature = Signature.getInstance(signAlgorithmType.bouncySignatureAlgorithmName(), CRYPTO_PROVIDER_NAME);
-        signature.initSign(privateKey);
-        signature.update(data.getBytes());
-        byte[] signBytes = signature.sign();
+        PrivateKey privateKey = KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME).generatePrivate(privateKeySpec);
+        byte[] signBytes = getSignature(data.getBytes(), privateKey, signAlgorithmType);
         return new String(Base64.getEncoder().encode(signBytes));
     }
 

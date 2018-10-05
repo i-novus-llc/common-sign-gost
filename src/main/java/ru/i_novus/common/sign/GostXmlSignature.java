@@ -73,7 +73,7 @@ public class GostXmlSignature {
                 .setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
         // Добавляем элемент SignatureMethod
         signedInfo.addChildElement("SignatureMethod", "ds")
-                .setAttribute("Algorithm", signAlgorithmType.signUri());
+                .setAttribute("Algorithm", signAlgorithmType.getSignUri());
         // Добавляем элемент Reference
         SOAPElement referenceSignedInfo = signedInfo.addChildElement("Reference", "ds")
                 .addAttribute(new QName("URI"), "#body");
@@ -83,7 +83,7 @@ public class GostXmlSignature {
                 .setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
         // Добавляем элемент DigestMethod
         referenceSignedInfo.addChildElement("DigestMethod", "ds")
-                .setAttribute("Algorithm", signAlgorithmType.digestUri());
+                .setAttribute("Algorithm", signAlgorithmType.getDigestUri());
         // Добавляем элемент DigestValue (значение хэша считаем позже)
         referenceSignedInfo.addChildElement("DigestValue", "ds");
         // Добавляем элемент SignatureValue (значение ЭЦП считаем позже)
