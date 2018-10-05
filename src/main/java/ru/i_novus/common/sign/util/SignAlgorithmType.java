@@ -54,7 +54,10 @@ public enum SignAlgorithmType {
                 "GostR3410-2001-CryptoPro-C", "GostR3410-2001-CryptoPro-XchA", "GostR3410-2001-CryptoPro-XchB"));
         parameterSpecNames.put(ECGOST3410_2012_256.name(), Collections.singletonList("Tc26-Gost-3410-12-256-paramSetA")); // must be 3 more param sets, according to https://cpdn.cryptopro.ru/content/csp40/html/group___pro_c_s_p_ex_CP_PARAM_OIDS.html
         parameterSpecNames.put(ECGOST3410_2012_512.name(), Arrays.asList("Tc26-Gost-3410-12-512-paramSetA",
-                "Tc26-Gost-3410-12-512-paramSetB", "Tc26-Gost-3410-12-512-paramSetC"));
+                "Tc26-Gost-3410-12-512-paramSetB"
+                //todo check for jenkins
+//                , "Tc26-Gost-3410-12-512-paramSetC"
+        ));
 
         signatureAlgorithmNames = new HashMap<>();
         signatureAlgorithmNames.put(RSA.name(), "SHA1WITHRSA");
