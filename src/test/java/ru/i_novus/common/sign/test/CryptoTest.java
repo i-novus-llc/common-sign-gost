@@ -16,6 +16,7 @@ import ru.i_novus.common.sign.util.Verifier;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
@@ -99,16 +100,16 @@ public class CryptoTest {
 
     @Test
     public void testReadFromPkcs() throws Exception {
-        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/first.pfx", "12345678");
-        //todo check second.pfx, must be 2012-512 algorithm
-//        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/second.pfx", "12345678");
+        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_256.pfx", "12345678");
+        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512.pfx", "12345678");
+        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512_emdr.pfx", "12345678");
     }
 
     private void testByKeysInPKCS12(String path, String password) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
-        PrivateKey privateKey = CryptoIO.readPrivateKeyFromPKCS12(Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(path), password);
-        X509Certificate certificate = CryptoIO.readCertificateFromPKCS12(Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream(path), password);
+        URL url = Thread.currentThread().getContextClassLoader().getResource(path);
+        assertNotNull(url);
+        PrivateKey privateKey = CryptoIO.readPrivateKeyFromPKCS12(url.openStream(), password);
+        X509Certificate certificate = CryptoIO.readCertificateFromPKCS12(url.openStream(), password);
 
         byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
         Path file = Files.createTempFile("signature", ".sig");

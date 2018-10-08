@@ -14,6 +14,7 @@ import org.bouncycastle.crypto.digests.GOST3411_2012_256Digest;
 import org.bouncycastle.crypto.digests.GOST3411_2012_512Digest;
 import org.bouncycastle.crypto.params.*;
 import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.ecgost12.BCECGOST3410_2012PrivateKey;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -234,7 +235,8 @@ public class CryptoUtil {
         certList.add(certificate);
         Store certs = new JcaCertStore(certList);
         CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-        ContentSigner signer = new JcaContentSignerBuilder(certificate.getSigAlgName()).setProvider(CRYPTO_PROVIDER_NAME).build(privateKey);
+
+        ContentSigner signer = new JcaContentSignerBuilder(getSignatureAlgorithmName(certificate, privateKey)).setProvider(CRYPTO_PROVIDER_NAME).build(privateKey);
 
         gen.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder()
                 .setProvider(CRYPTO_PROVIDER_NAME).build()).build(signer, certificate));
@@ -242,6 +244,14 @@ public class CryptoUtil {
         gen.addCertificates(certs);
         CMSSignedData sigData = gen.generate(msg, false);
         return sigData.getEncoded();
+    }
+
+    private static String getSignatureAlgorithmName(X509Certificate certificate, PrivateKey privateKey) {
+        if (privateKey instanceof BCECGOST3410_2012PrivateKey && ((BCECGOST3410_2012PrivateKey) privateKey).getParams().getOrder().bitLength() == 512) {
+            return SignAlgorithmType.ECGOST3410_2012_512.getSignatureAlgorithmName();
+        } else {
+            return certificate.getSigAlgName();
+        }
     }
 
     /**
