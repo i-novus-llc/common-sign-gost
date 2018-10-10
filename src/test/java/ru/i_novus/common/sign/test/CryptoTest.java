@@ -94,7 +94,6 @@ public class CryptoTest {
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_256.pfx", "12345678");
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512.pfx", "12345678");
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512_emdr.pfx", "12345678");
-//        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2001.pfx", "12345678");
     }
 
     private void testByKeysInPKCS12(String path, String password) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
