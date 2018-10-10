@@ -95,7 +95,7 @@ public class IpsSignTest {
         logger.info("Prepare IPS Response signature for algorithm {}", certificate.getSigAlgName());
         SOAPMessage message = getIpsTestResponse();
         logger.info("IPS Response message before signature: {}", getSoapMessageContent(message));
-        IpsRequestSigner.signIpsResponse(message, certificate, privateKey);
+        IpsRequestSigner.signIpsResponse(message, privateKey, certificate);
 
         logger.info("IPS Response message after signature: {}", getSoapMessageContent(message));
         checkSignedMessage(message);

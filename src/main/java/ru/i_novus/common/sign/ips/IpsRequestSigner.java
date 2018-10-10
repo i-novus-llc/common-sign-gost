@@ -111,17 +111,16 @@ public final class IpsRequestSigner {
             TransformerException, GeneralSecurityException, InvalidCanonicalizerException, CanonicalizationException, IOException {
         CryptoFormatConverter converter = CryptoFormatConverter.getInstance();
         X509Certificate certificate = converter.getCertificateFromPEMEncoded(encodedCertificate);
-        signIpsResponse(message, certificate, converter.getPKFromPEMEncoded(SignAlgorithmType.findByCertificate(certificate), encodedKey));
+        signIpsResponse(message, converter.getPKFromPEMEncoded(SignAlgorithmType.findByCertificate(certificate), encodedKey), certificate);
     }
 
     /**
      * Подписывает SOAP-ответ для сервиса ИПС
-     *
      * @param message сообщение
-     * @param certificate сертификат в формате PEM
      * @param privateKey закрытый ключ в формате PEM
+     * @param certificate сертификат в формате PEM
      */
-    public static void signIpsResponse(SOAPMessage message, X509Certificate certificate, PrivateKey privateKey) throws SOAPException,
+    public static void signIpsResponse(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException,
             TransformerException, GeneralSecurityException, InvalidCanonicalizerException, CanonicalizationException, IOException {
         // Добавляем требуемые пространства имен
         message.getSOAPPart().getEnvelope().addNamespaceDeclaration("wsse", WSSE_NS)
