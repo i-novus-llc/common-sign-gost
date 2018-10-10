@@ -2,16 +2,12 @@ package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import ru.i_novus.common.sign.util.CryptoIO;
-import ru.i_novus.common.sign.util.CryptoUtil;
-import ru.i_novus.common.sign.util.SignAlgorithmType;
-import ru.i_novus.common.sign.util.Verifier;
+import ru.i_novus.common.sign.util.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,15 +17,13 @@ import java.nio.file.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static ru.i_novus.common.sign.util.CryptoIO.inputStreamToByteArray;
 
 @Slf4j
 public class CryptoTest {
-    private static final String TEST_CERTIFICATE_CN = "CN=Белов Александр, O=Общество с ограниченной ответственностью \"Ай-Новус\", E=abelov@i-novus.ru, L=Казань, C=RU, STREET=ул. Сеченова 19Б";
+    public static final String TEST_CERTIFICATE_CN = "CN=Сотрудник ООО \"Ай-Новус\", O=Общество с ограниченной ответственностью \"Ай-Новус\", E=office@i-novus.ru, L=Казань, C=RU, STREET=ул. Сеченова 19Б";
     private static final byte[] TEST_DATA_TO_SIGN = getTestData();
 
     @BeforeClass
@@ -52,7 +46,7 @@ public class CryptoTest {
     }
 
     private void testOneAlgorithm(final SignAlgorithmType signAlgorithm, final String parameterSpecName, final String basePath) throws IOException,
-            GeneralSecurityException, OperatorCreationException {
+            GeneralSecurityException {
         KeyPair keyPair = CryptoUtil.generateKeyPair(signAlgorithm, parameterSpecName);
         checkKeyPair(keyPair);
 
@@ -62,22 +56,20 @@ public class CryptoTest {
         if (certificateHolder == null)
             throw new IllegalArgumentException("Signature algorithm '" + signAlgorithm.name() + "' is not supported");
 
-        keyPath = CryptoIO.writePKToFile(keyPair, Paths.get(basePath, keyPath));
-        logger.info("Path to key: {}", keyPath);
-        crtPath = CryptoIO.writeCertToFile(certificateHolder, Paths.get(basePath, crtPath));
-        logger.info("Path to certificate: {}", crtPath);
+        CryptoIO cryptoIO = CryptoIO.getInstance();
+        keyPath = cryptoIO.writePKToFile(keyPair, Paths.get(basePath, keyPath));
+        logger.info("Path to key: {}, algorithm {}", keyPath, signAlgorithm);
+        crtPath = cryptoIO.writeCertToFile(certificateHolder, Paths.get(basePath, crtPath));
+        logger.info("Path to certificate: {}, algorithm {}", crtPath, signAlgorithm);
 
         try {
-            certificateHolder = CryptoIO.readCertFromDer(crtPath);
-            PKCS8EncodedKeySpec keySpec = CryptoIO.readPkFromDer(keyPath);
-
-            JcaX509CertificateConverter jcaConverter = new JcaX509CertificateConverter();
-            jcaConverter.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            X509Certificate certificate = jcaConverter.getCertificate(certificateHolder);
+            certificateHolder = cryptoIO.readCertFromDer(crtPath);
+            PKCS8EncodedKeySpec keySpec = cryptoIO.readPkFromDer(keyPath);
+            X509Certificate certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder);
 
             SignAlgorithmType algorithmType = SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());
             if (TEST_DATA_TO_SIGN != null) {
-                String signature = CryptoUtil.getBase64Signature(new String(TEST_DATA_TO_SIGN), new String(Base64.getEncoder().encode(keySpec.getEncoded())),
+                String signature = CryptoUtil.getBase64Signature(new String(TEST_DATA_TO_SIGN), CryptoIO.getInstance().getBase64EncodedString(keySpec.getEncoded()),
                         algorithmType);
             }
 
@@ -93,8 +85,7 @@ public class CryptoTest {
         assertNotNull(keyPair.getPublic());
     }
 
-    private X509CertificateHolder selfSignedCertificate(KeyPair keyPair, SignAlgorithmType signAlgorithm)
-            throws IOException, OperatorCreationException {
+    private X509CertificateHolder selfSignedCertificate(KeyPair keyPair, SignAlgorithmType signAlgorithm) {
         return CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, signAlgorithm, null, null);
     }
 
@@ -103,13 +94,15 @@ public class CryptoTest {
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_256.pfx", "12345678");
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512.pfx", "12345678");
         testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2012_512_emdr.pfx", "12345678");
+//        testByKeysInPKCS12("ru/i_novus/common/sign/test/cryptopro/gost2001.pfx", "12345678");
     }
 
     private void testByKeysInPKCS12(String path, String password) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
         URL url = Thread.currentThread().getContextClassLoader().getResource(path);
         assertNotNull(url);
-        PrivateKey privateKey = CryptoIO.readPrivateKeyFromPKCS12(url.openStream(), password);
-        X509Certificate certificate = CryptoIO.readCertificateFromPKCS12(url.openStream(), password);
+        CryptoIO cryptoIO = CryptoIO.getInstance();
+        PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(url.openStream(), password);
+        X509Certificate certificate = cryptoIO.readCertificateFromPKCS12(url.openStream(), password);
 
         byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
         Path file = Files.createTempFile("signature", ".sig");
@@ -118,7 +111,7 @@ public class CryptoTest {
             logger.info("file name: {}", file.toString());
 
             Verifier verifier = Verifier.getInstance();
-            boolean valid = verifier.verifyCmsSignature(getTestData(), inputStreamToByteArray(new FileInputStream(file.toFile())));
+            boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(new FileInputStream(file.toFile())));
             assertTrue(valid);
         } finally {
             Files.delete(file);
@@ -127,11 +120,6 @@ public class CryptoTest {
 
     private static byte[] getTestData() {
         InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/getRequestRequest.xml");
-        try {
-            return inputStreamToByteArray(inputStream);
-        } catch (IOException e) {
-            logger.error("Cannot get test data", e);
-            return null;
-        }
+        return CryptoIO.getInstance().inputStreamToByteArray(inputStream);
     }
 }

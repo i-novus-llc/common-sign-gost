@@ -1,5 +1,6 @@
 package ru.i_novus.common.sign.util;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
@@ -30,6 +31,7 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
+import ru.i_novus.common.sign.Init;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -38,7 +40,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -46,15 +47,11 @@ import java.util.*;
 
 @Slf4j
 public class CryptoUtil {
-
-    public static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
-
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
+    static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
     private CryptoUtil() {
-        // не позволяет создать экземпляр класса, класс утилитный
+        Security.addProvider(new BouncyCastleProvider());
+        Init.init();
     }
 
     /**
@@ -63,12 +60,9 @@ public class CryptoUtil {
      * @param signAlgorithmType тип алгоритма
      * @param parameterSpecName наименование спецификации параметров алгоритма
      * @return ключевая пара (открытый и закрытый ключи)
-     * @throws NoSuchAlgorithmException           указанный алгоритм не найден
-     * @throws NoSuchProviderException            криптопровайдер "Bouncy castle" не инициализирован
-     * @throws InvalidAlgorithmParameterException неверное наименование спецификации параметров алгоритма
      */
-    public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName) throws
-            NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    @SneakyThrows
+    public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName) {
         logger.info("Generating keypair, signAlgorithm: {}, parameterSpecName: {}", signAlgorithmType, parameterSpecName);
 
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME);
@@ -109,12 +103,10 @@ public class CryptoUtil {
      * @param validFrom     момент времени, с которого будет действителен формируемый сертификат. Если передано null, берется текущее время
      * @param validTo       момент времени, до которого будет действителен формируемый сертификат. Если передано null, берется текущее время + 1 год
      * @return данные сертификата в формате X.509
-     * @throws IOException               оишбка записи данных в формат сертификата
-     * @throws OperatorCreationException ошибка формирования сертификата
      */
+    @SneakyThrows
     public static X509CertificateHolder selfSignedCertificate(String x509Name, KeyPair keyPair, SignAlgorithmType signAlgorithm,
-                                                              Date validFrom, Date validTo)
-            throws IOException, OperatorCreationException {
+                                                              Date validFrom, Date validTo) {
         X500Name name = new X500Name(x509Name);
         AsymmetricKeyParameter privateKeyParameter = null;
         AsymmetricKeyParameter publicKeyParameter = null;
@@ -187,7 +179,7 @@ public class CryptoUtil {
      * @return хэш в base64
      */
     public static String getBase64Digest(String data, SignAlgorithmType signAlgorithmType) {
-        return new String(Base64.getEncoder().encode(getDigest(data.getBytes(), signAlgorithmType)));
+        return CryptoIO.getInstance().getBase64EncodedString(getDigest(data.getBytes(), signAlgorithmType));
     }
 
     /**
@@ -280,31 +272,9 @@ public class CryptoUtil {
      * @throws GeneralSecurityException исключении о невозможности использования переданного ключа и алгоритма подписи с поддерживаемым криптопровайдером
      */
     public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(decodePem(key));
-        PrivateKey privateKey = KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME).generatePrivate(privateKeySpec);
+        PrivateKey privateKey = CryptoFormatConverter.getInstance().getPKFromPEMEncoded(signAlgorithmType, key);
         byte[] signBytes = getSignature(data.getBytes(), privateKey, signAlgorithmType);
-        return new String(Base64.getEncoder().encode(signBytes));
-    }
-
-    /**
-     * Получает закрытый ключ PKCS#8 из PEM-формата
-     *
-     * @param key закрытый ключ в base64 (PEM-формат в base64)
-     * @return закрытый ключ PKCS#8
-     */
-    public static byte[] decodePem(final String key) {
-        String pem = key;
-        try {
-            pem = pem.replace(pem.substring(pem.indexOf("-----END"), pem.lastIndexOf("-----") + 5), "");
-        } catch (Exception ignore) {
-            //NOP
-        }
-        try {
-            pem = pem.replace(pem.substring(pem.indexOf("-----BEGIN"), pem.lastIndexOf("-----") + 5), "");
-        } catch (Exception ignore) {
-            //NOP
-        }
-        return Base64.getDecoder().decode(pem.replaceAll("\\r\\n|\\n", ""));
+        return CryptoIO.getInstance().getBase64EncodedString(signBytes);
     }
 
     public static String getThumbPrint(X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {

@@ -1,10 +1,9 @@
 package ru.i_novus.common.sign;
 
+import lombok.SneakyThrows;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.algorithms.SignatureAlgorithm;
-import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
-import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xml.security.transforms.Transform;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.i_novus.common.sign.smev.SmevTransformSpi;
@@ -19,7 +18,8 @@ public final class Init {
     private Init() {
     }
 
-    public synchronized static void init() throws XMLSignatureException, AlgorithmAlreadyRegisteredException, ClassNotFoundException {
+    @SneakyThrows
+    public synchronized static void init() {
         if (initialized) {
             return;
         }

@@ -4,10 +4,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
-import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
-import org.apache.xml.security.signature.XMLSignatureException;
 import org.apache.xpath.XPathAPI;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import ru.i_novus.common.sign.util.CryptoFormatConverter;
+import ru.i_novus.common.sign.util.CryptoIO;
 import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.SignAlgorithmType;
 
@@ -22,11 +21,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
-import java.util.Base64;
 
 public class GostXmlSignature {
 
@@ -40,22 +36,7 @@ public class GostXmlSignature {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    /**
-     * Определение алгоритма подписи по сертификату
-     *
-     * @param encodedCertificate сертификат в формате PEM
-     * @return алгоритм подписи
-     */
-    public static SignAlgorithmType getSignAlgorithmType(String encodedCertificate) throws CertificateException, NoSuchProviderException, XMLSignatureException, AlgorithmAlreadyRegisteredException, ClassNotFoundException {
-        Init.init();
-        //Определяем алгоритм подписи
-        ByteArrayInputStream certStream = new ByteArrayInputStream(Base64.getDecoder().decode(
-                encodedCertificate.replaceAll("[\r\n]", "")));
-        X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME).generateCertificate(certStream);
-        return SignAlgorithmType.valueOf(certificate.getPublicKey());
-    }
-
-    public static void addSecurityElement(SOAPMessage message, String certificate, String actor, SignAlgorithmType signAlgorithmType) throws SOAPException {
+    public static void addSecurityElement(SOAPMessage message, String encodedCertificate, String actor, SignAlgorithmType signAlgorithmType) throws SOAPException {
         // Добавляем элемент Security
         SOAPElement security;
         if (StringUtils.isBlank(actor)) {
@@ -99,10 +80,22 @@ public class GostXmlSignature {
                 .addAttribute(new QName("EncodingType"), BASE64_ENCODING)
                 .addAttribute(new QName("ValueType"), X509_V3_TYPE)
                 .addAttribute(new QName("wsu:Id"), "CertId")
-                .addTextNode(certificate);
+                .addTextNode(encodedCertificate);
     }
 
-    public static void sign(SOAPMessage message, String privateKey, SignAlgorithmType signAlgorithmType) throws IOException,
+    public static void addSecurityElement(SOAPMessage message, X509Certificate certificate, String actor)
+            throws SOAPException {
+        addSecurityElement(message, CryptoFormatConverter.getInstance().getPEMEncodedCertificate(certificate), actor, SignAlgorithmType.findByCertificate(certificate));
+    }
+
+    public static void sign(SOAPMessage message, String encodedPrivateKey, SignAlgorithmType signAlgorithmType) throws IOException,
+            SOAPException, TransformerException, InvalidCanonicalizerException, CanonicalizationException, GeneralSecurityException {
+
+        PrivateKey privateKey = CryptoFormatConverter.getInstance().getPKFromPEMEncoded(signAlgorithmType, encodedPrivateKey);
+        sign(message, privateKey, signAlgorithmType);
+    }
+
+    public static void sign(SOAPMessage message, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException,
             SOAPException, TransformerException, InvalidCanonicalizerException, CanonicalizationException, GeneralSecurityException {
         // Сохраняем изменения
         message.saveChanges();
@@ -118,12 +111,13 @@ public class GostXmlSignature {
                 .addTextNode(CryptoUtil.getBase64Digest(
                         new String(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
                                 .canonicalizeSubtree(message.getSOAPBody())), signAlgorithmType));
+
+        byte[] signature = CryptoUtil.getSignature(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
+                        .canonicalizeSubtree(XPathAPI.selectSingleNode(message.getSOAPHeader(),
+                                "//*[local-name()='SignedInfo']")), privateKey, signAlgorithmType);
+
         // ВАЖНО: Считаем подпись после всех манипуляций с SignedInfo
         ((SOAPElement) XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='SignatureValue']"))
-                .addTextNode(CryptoUtil.getBase64Signature(
-                        new String(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
-                                .canonicalizeSubtree(XPathAPI.selectSingleNode(message.getSOAPHeader(),
-                                        "//*[local-name()='SignedInfo']"))),
-                        privateKey, signAlgorithmType));
+                .addTextNode(CryptoIO.getInstance().getBase64EncodedString(signature));
     }
 }

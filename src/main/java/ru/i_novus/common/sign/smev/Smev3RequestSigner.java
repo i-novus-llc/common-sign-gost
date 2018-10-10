@@ -7,9 +7,7 @@ import org.apache.xml.security.transforms.Transforms;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import ru.i_novus.common.sign.GostXmlSignature;
-import ru.i_novus.common.sign.Init;
-import ru.i_novus.common.sign.util.CryptoUtil;
+import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -17,17 +15,8 @@ import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
-import java.io.ByteArrayInputStream;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.Base64;
 
 public final class Smev3RequestSigner {
     private static final String SMEV3_MESSAGE_EXCHANGE_TYPES_1_2_NS = "urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2";
@@ -36,8 +25,8 @@ public final class Smev3RequestSigner {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static void signSmev3Request(SOAPMessage message, X509Certificate certificate, PrivateKey privateKey)
-            throws SOAPException, XMLSecurityException, ClassNotFoundException {
+    public static void signSmev3Request(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate)
+            throws SOAPException, XMLSecurityException {
         SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
         SOAPBody soapBody = envelope.getBody();
         Node actionNode = getActionNode(soapBody);
@@ -50,13 +39,12 @@ public final class Smev3RequestSigner {
             Node callerSigElement = actionNode.appendChild(callerInformationSignature);
             callerSigElement.setPrefix("ns2");
 
-            Init.init();
             // Подписываем сообщение
             Transforms transforms = new Transforms(soapBody.getOwnerDocument());
             transforms.addTransform(CanonicalizationMethod.EXCLUSIVE);
             transforms.addTransform(SmevTransformSpi.ALGORITHM_URN);
 
-            SignAlgorithmType signAlgorithmType = SignAlgorithmType.valueOf(certificate.getPublicKey());
+            SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
 
             XMLSignature signature = new XMLSignature(soapBody.getOwnerDocument(), "", signAlgorithmType.getSignUri(), CanonicalizationMethod.EXCLUSIVE);
             signature.addDocument("#" + contentElementId, transforms, signAlgorithmType.getDigestUri());
@@ -67,19 +55,15 @@ public final class Smev3RequestSigner {
         }
     }
 
-    public static void signSmev3Request(SOAPMessage message, String encodedCertificate, String privateKey) throws NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, XMLSecurityException, ClassNotFoundException, InvalidKeySpecException, SOAPException {
+    public static void signSmev3Request(SOAPMessage message, String encodedCertificate, String privateKey) throws
+            XMLSecurityException, SOAPException {
 
-        Init.init();
-        SignAlgorithmType signAlgorithmType = GostXmlSignature.getSignAlgorithmType(encodedCertificate);
+        CryptoFormatConverter converter = CryptoFormatConverter.getInstance();
+        X509Certificate certificate = converter.getCertificateFromPEMEncoded(encodedCertificate);
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
+        PrivateKey pk = converter.getPKFromPEMEncoded(signAlgorithmType, privateKey);
 
-        PrivateKey pk = KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
-                .generatePrivate(new PKCS8EncodedKeySpec(CryptoUtil.decodePem(privateKey)));
-
-        X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509")
-                .generateCertificate(new ByteArrayInputStream(Base64.getDecoder().decode(encodedCertificate)));
-
-        signSmev3Request(message, certificate, pk);
+        signSmev3Request(message, pk, certificate);
     }
 
     private static Node getActionNode(SOAPBody soapBody) {

@@ -33,7 +33,6 @@ public final class SmevTransformSpi extends TransformSpi {
     @Override
     protected XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput,
                                                        OutputStream argOutput, Transform argTransform) throws IOException, TransformationException {
-
         if (argOutput == null)
             return enginePerformTransform(argInput);
         else {

@@ -1,6 +1,7 @@
 package ru.i_novus.common.sign.util;
 
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.util.*;
 
@@ -89,6 +90,10 @@ public enum SignAlgorithmType {
         if (algorithm == null)
             throw new IllegalArgumentException("Unsupported public key algorithm: " + algorithmName);
         return algorithm;
+    }
+
+    public static SignAlgorithmType findByCertificate(X509Certificate certificate) {
+        return SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());
     }
 
     public String getBouncyKeyAlgorithmName() {
