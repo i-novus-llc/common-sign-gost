@@ -71,7 +71,7 @@ public class ConverterTest {
             logger.info("Generated PKCS file: {}", temporaryFile.toString());
             testKeysInPKCS12(temporaryFile, password);
         } finally {
-//            Files.delete(temporaryFile);
+            Files.delete(temporaryFile);
         }
     }
 

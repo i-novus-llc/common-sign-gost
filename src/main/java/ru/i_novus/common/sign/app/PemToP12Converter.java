@@ -44,13 +44,13 @@ public class PemToP12Converter {
     private void checkFile(Path path) {
         File file = path.toFile();
         if (!file.exists()) {
-            throw new IllegalArgumentException("Файл '" + path.getFileName() + "' не существует");
+            throw new IllegalArgumentException("Файл '" + path + "' не существует");
         }
         if (!file.isFile()) {
-            throw new IllegalArgumentException("'" + path.getFileName() + "' не является файлом");
+            throw new IllegalArgumentException("'" + path + "' не является файлом");
         }
         if (!Files.isReadable(path)) {
-            throw new IllegalArgumentException("Не удается прочитать содержимое файла '" + path.getFileName() + "'. Нет доступа");
+            throw new IllegalArgumentException("Не удается прочитать содержимое файла '" + path + "'. Нет доступа");
         }
     }
 
