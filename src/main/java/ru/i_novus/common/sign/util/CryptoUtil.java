@@ -31,7 +31,6 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
-import ru.i_novus.common.sign.Init;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -45,13 +44,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
+import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
+
 @Slf4j
 public class CryptoUtil {
     static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
 
     private CryptoUtil() {
         Security.addProvider(new BouncyCastleProvider());
-        Init.init();
     }
 
     /**
@@ -179,7 +179,7 @@ public class CryptoUtil {
      * @return хэш в base64
      */
     public static String getBase64Digest(String data, SignAlgorithmType signAlgorithmType) {
-        return CryptoIO.getInstance().getBase64EncodedString(getDigest(data.getBytes(), signAlgorithmType));
+        return getBase64EncodedString(getDigest(data.getBytes(), signAlgorithmType));
     }
 
     /**
@@ -274,7 +274,7 @@ public class CryptoUtil {
     public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         PrivateKey privateKey = CryptoFormatConverter.getInstance().getPKFromPEMEncoded(signAlgorithmType, key);
         byte[] signBytes = getSignature(data.getBytes(), privateKey, signAlgorithmType);
-        return CryptoIO.getInstance().getBase64EncodedString(signBytes);
+        return getBase64EncodedString(signBytes);
     }
 
     public static String getThumbPrint(X509Certificate cert) throws NoSuchAlgorithmException, CertificateEncodingException {

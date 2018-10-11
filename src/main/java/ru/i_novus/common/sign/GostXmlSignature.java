@@ -6,7 +6,6 @@ import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xpath.XPathAPI;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
-import ru.i_novus.common.sign.util.CryptoIO;
 import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.SignAlgorithmType;
 
@@ -23,6 +22,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+
+import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
 public class GostXmlSignature {
 
@@ -118,6 +119,6 @@ public class GostXmlSignature {
 
         // ВАЖНО: Считаем подпись после всех манипуляций с SignedInfo
         ((SOAPElement) XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='SignatureValue']"))
-                .addTextNode(CryptoIO.getInstance().getBase64EncodedString(signature));
+                .addTextNode(getBase64EncodedString(signature));
     }
 }

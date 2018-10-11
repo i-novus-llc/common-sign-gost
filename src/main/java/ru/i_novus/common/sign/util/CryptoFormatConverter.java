@@ -11,13 +11,18 @@ import ru.i_novus.common.sign.Init;
 import java.io.ByteArrayInputStream;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+import static ru.i_novus.common.sign.util.Base64Util.getBase64Decoded;
+import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
+
 @Slf4j
 public class CryptoFormatConverter {
     private CryptoFormatConverter() {
+        Security.addProvider(new BouncyCastleProvider());
         Init.init();
     }
 
@@ -33,8 +38,7 @@ public class CryptoFormatConverter {
      */
     @SneakyThrows
     public String getPEMEncodedCertificate(X509Certificate certificate) {
-        CryptoIO cryptoIO = CryptoIO.getInstance();
-        return cryptoIO.getBase64EncodedString(cryptoIO.writeCertToByteArray(new JcaX509CertificateHolder(certificate)));
+        return getBase64EncodedString(CryptoIO.getInstance().writeCertToByteArray(new JcaX509CertificateHolder(certificate)));
     }
 
     /**
@@ -87,6 +91,6 @@ public class CryptoFormatConverter {
         } catch (Exception ignore) {
             //NOP
         }
-        return CryptoIO.getInstance().getBase64Decoded(pem.replaceAll("\\r\\n|\\n", ""));
+        return getBase64Decoded(pem.replaceAll("\\r\\n|\\n", ""));
     }
 }

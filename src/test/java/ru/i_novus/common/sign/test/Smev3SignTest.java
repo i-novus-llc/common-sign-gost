@@ -2,7 +2,6 @@ package ru.i_novus.common.sign.test;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,16 +12,11 @@ import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.SignAlgorithmType;
 
 import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
 import java.io.InputStream;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 
 import static org.junit.Assert.assertNotNull;
 import static ru.i_novus.common.sign.test.SoapUtil.getSoapMessageContent;

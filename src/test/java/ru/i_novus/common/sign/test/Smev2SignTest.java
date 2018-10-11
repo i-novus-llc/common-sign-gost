@@ -7,7 +7,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.NodeList;
 import ru.i_novus.common.sign.Init;
-import ru.i_novus.common.sign.ips.IpsRequestSigner;
 import ru.i_novus.common.sign.smev.Smev2RequestSigner;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
