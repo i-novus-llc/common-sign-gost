@@ -18,6 +18,7 @@ public enum SignAlgorithmType {
     private static final Map<String, String> signUrns;
     private static final Map<String, List<String>> parameterSpecNames;
     private static final Map<String, String> signatureAlgorithmNames;
+    private static final Map<String, List<String>> gostHashAlgorithmOid;
 
     private static final String ECGOST3410_2012 = "ECGOST3410-2012";
 
@@ -62,6 +63,14 @@ public enum SignAlgorithmType {
         signatureAlgorithmNames.put(ECGOST3410.name(), "GOST3411WITHECGOST3410");
         signatureAlgorithmNames.put(ECGOST3410_2012_256.name(), "GOST3411-2012-256WITHECGOST3410-2012-256");
         signatureAlgorithmNames.put(ECGOST3410_2012_512.name(), "GOST3411-2012-512WITHECGOST3410-2012-512");
+
+        gostHashAlgorithmOid = new HashMap<>();
+        gostHashAlgorithmOid.put(ECGOST3410.name(), Arrays.asList("1.2.643.2.2.9", "1.2.643.2.2.3", "1.2.643.2.2.19",
+                "1.2.643.2.2.98"));
+        gostHashAlgorithmOid.put(ECGOST3410_2012_256.name(), Arrays.asList("1.2.643.7.1.1.3.2", "1.2.643.7.1.1.2.2",
+                "1.2.643.7.1.1.1.1", "1.2.643.7.1.1.6.1"));
+        gostHashAlgorithmOid.put(ECGOST3410_2012_512.name(), Arrays.asList("1.2.643.7.1.1.2.3", "1.2.643.7.1.1.3.3",
+                "1.2.643.7.1.1.1.2", "1.2.643.7.1.1.6.2"));
     }
 
     public static SignAlgorithmType valueOf(PublicKey publicKey) {
@@ -77,6 +86,19 @@ public enum SignAlgorithmType {
             return ECGOST3410_2012_512;
         }
         throw new IllegalArgumentException("Unsupported public key algorithm: " + algorithm);
+    }
+
+    public static SignAlgorithmType findByOid(String oid) {
+        SignAlgorithmType algorithm = null;
+        for (SignAlgorithmType algorithmType : SignAlgorithmType.values()) {
+            if (!algorithmType.name().equals("RSA") && gostHashAlgorithmOid.get(algorithmType.name()).contains(oid)) {
+                algorithm = algorithmType;
+                break;
+            }
+        }
+        if (algorithm == null)
+            throw new IllegalArgumentException("Unsupported public key algorithm: " + oid);
+        return algorithm;
     }
 
     public static SignAlgorithmType findByAlgorithmName(String algorithmName) {

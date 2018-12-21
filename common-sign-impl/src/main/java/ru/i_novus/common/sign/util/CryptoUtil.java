@@ -50,6 +50,7 @@ import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 @Slf4j
 public class CryptoUtil {
     static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
+    private static final int BUFFER_SIZE = 1024;
 
     private CryptoUtil() {
         Security.addProvider(new BouncyCastleProvider());
@@ -190,24 +191,36 @@ public class CryptoUtil {
      * @return хэш в base64
      */
     public static byte[] getDigest(byte[] data, SignAlgorithmType signAlgorithmType) {
-        ExtendedDigest digest;
-        switch (signAlgorithmType) {
-            case ECGOST3410:
-                digest = new GOST3411Digest();
-                break;
-            case ECGOST3410_2012_256:
-                digest = new GOST3411_2012_256Digest();
-                break;
-            case ECGOST3410_2012_512:
-                digest = new GOST3411_2012_512Digest();
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported Digest Algorithm: " + signAlgorithmType);
-        }
+        ExtendedDigest digest = fillDigest(signAlgorithmType);
         digest.update(data, 0, data.length);
         byte[] resBuf = new byte[digest.getDigestSize()];
         digest.doFinal(resBuf, 0);
+
         return resBuf;
+    }
+
+    /**
+     * Формирует хэш данных для заданного алгоритма
+     *
+     * @param inputStream входные данные
+     * @return хэш
+     */
+    public static byte[] getDigest(InputStream inputStream, SignAlgorithmType signAlgorithmType) throws IOException {
+        ExtendedDigest digest = fillDigest(signAlgorithmType);
+
+        try {
+            byte[] dataBytes = new byte[BUFFER_SIZE];
+            int numRead;
+            while ((numRead = inputStream.read(dataBytes)) != -1) {
+                digest.update(dataBytes, 0, numRead);
+            }
+            byte[] resBuf = new byte[digest.getDigestSize()];
+            digest.doFinal(resBuf, 0);
+
+            return resBuf;
+        } finally {
+            inputStream.close();
+        }
     }
 
     /**
@@ -294,5 +307,18 @@ public class CryptoUtil {
             buf.append(hexDigits[aByte & 0x0f]);
         }
         return buf.toString();
+    }
+
+    private static ExtendedDigest fillDigest(SignAlgorithmType signAlgorithmType) {
+        switch (signAlgorithmType) {
+            case ECGOST3410:
+                return new GOST3411Digest();
+            case ECGOST3410_2012_256:
+                return new GOST3411_2012_256Digest();
+            case ECGOST3410_2012_512:
+                return new GOST3411_2012_512Digest();
+            default:
+                throw new IllegalArgumentException("Unsupported Digest Algorithm: " + signAlgorithmType);
+        }
     }
 }
