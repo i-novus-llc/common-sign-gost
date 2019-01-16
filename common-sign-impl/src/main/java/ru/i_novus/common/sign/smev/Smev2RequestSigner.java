@@ -128,6 +128,30 @@ public final class Smev2RequestSigner {
         }
     }
 
+    /**
+     * Подписывает SOAP-запрос для сервиса СМЭВ 2
+     *
+     * @param message сообщение
+     * @param privateKey закрытый ключ в формате {@link PrivateKey}
+     * @param certificate сертификат в формате {@link X509Certificate}
+     * @throws SOAPException
+     * @throws InvalidCanonicalizerException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws CanonicalizationException
+     * @throws IOException
+     * @throws RuntimeException
+     */
+    @Deprecated
+    public static void signSmevRequest(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException,
+            InvalidCanonicalizerException, GeneralSecurityException, TransformerException, CanonicalizationException, IOException {
+        try {
+            sign(message, privateKey, certificate);
+        } catch (CommonSignFailureException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static void addNamespaceDeclaration(SOAPEnvelope soapEnvelope) throws SOAPException {
         soapEnvelope.addNamespaceDeclaration("wsse", WSSE_NS)
                 .addNamespaceDeclaration("wsu", WSU_NS)
