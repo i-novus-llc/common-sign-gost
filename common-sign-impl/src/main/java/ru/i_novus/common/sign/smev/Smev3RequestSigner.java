@@ -18,6 +18,7 @@ import ru.i_novus.common.sign.util.*;
 import javax.xml.soap.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -267,7 +268,7 @@ public final class Smev3RequestSigner {
             signDigestValue(privateKey, signAlgorithmType, signatureElem);
 
             return signatureElem;
-        } catch (XMLSecurityException | RuntimeException ex) {
+        } catch (XMLSecurityException | GeneralSecurityException | RuntimeException ex) {
             throw new CommonSignFailureException(ex);
         }
     }
@@ -278,11 +279,11 @@ public final class Smev3RequestSigner {
      * @param privateKey        объект закрытого ключа
      * @param signAlgorithmType алгоритм ЭП
      * @param signatureElem     объект элемента Signature
-     * @throws CommonSignFailureException
-     * @throws CanonicalizationException
      * @throws InvalidCanonicalizerException
+     * @throws CanonicalizationException
+     * @throws GeneralSecurityException
      */
-    private static void signDigestValue(PrivateKey privateKey, SignAlgorithmType signAlgorithmType, Element signatureElem) throws CommonSignFailureException, CanonicalizationException, InvalidCanonicalizerException {
+    private static void signDigestValue(PrivateKey privateKey, SignAlgorithmType signAlgorithmType, Element signatureElem) throws InvalidCanonicalizerException, CanonicalizationException, GeneralSecurityException {
 
         Node signedInfoNode = XPathUtil.selectSingleNode(signatureElem, "ds:SignedInfo");
 
@@ -302,6 +303,7 @@ public final class Smev3RequestSigner {
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @param signAlgorithmType     тип алгоритма ЭП
      * @return
+     * @throws RuntimeException
      */
     private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) {
 

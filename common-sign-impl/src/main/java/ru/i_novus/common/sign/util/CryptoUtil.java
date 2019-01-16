@@ -38,8 +38,6 @@ import org.bouncycastle.util.Store;
 import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.context.DSNamespaceContext;
-import ru.i_novus.common.sign.exception.CommonSignFailureException;
-import ru.i_novus.common.sign.exception.CommonSignRuntimeException;
 
 import javax.xml.soap.SOAPBody;
 import java.io.*;
@@ -277,22 +275,19 @@ public class CryptoUtil {
      * @return подпись
      * @throws CommonSignFailureException
      */
-    public static byte[] getSignature(byte[] data, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws CommonSignFailureException {
-
+    /**
+     *
+     * @param data
+     * @param privateKey
+     * @param signAlgorithmType
+     * @return
+     * @throws GeneralSecurityException
+     */
+    public static byte[] getSignature(byte[] data, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         Signature signature = getSignatureInstance(signAlgorithmType);
-
-        try {
-            signature.initSign(privateKey);
-        } catch (InvalidKeyException e) {
-            throw new CommonSignFailureException("Невозможно использовать переданный ключ и алгоритм подписи с поддерживаемым криптопровайдером", e);
-        }
-
-        try {
-            signature.update(data);
-            return signature.sign();
-        } catch (SignatureException e) {
-            throw new CommonSignFailureException("Ошибка при подписании данных ЭП", e);
-        }
+        signature.initSign(privateKey);
+        signature.update(data);
+        return signature.sign();
     }
 
     /**
@@ -302,9 +297,9 @@ public class CryptoUtil {
      * @param key               закрытый ключ в base64
      * @param signAlgorithmType параметры алгоритма подписи
      * @return подпись в base64
-     * @throws CommonSignFailureException
+     * @throws GeneralSecurityException
      */
-    public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws CommonSignFailureException {
+    public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         PrivateKey privateKey = CryptoFormatConverter.getInstance().getPKFromPEMEncoded(signAlgorithmType, key);
         byte[] signBytes = getSignature(data.getBytes(), privateKey, signAlgorithmType);
         return getBase64EncodedString(signBytes);
@@ -341,17 +336,9 @@ public class CryptoUtil {
         }
     }
 
-    private static Signature getSignatureInstance(SignAlgorithmType signAlgorithmType) throws CommonSignFailureException {
-
+    private static Signature getSignatureInstance(SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         final String algorithmName = signAlgorithmType.getSignatureAlgorithmName();
-
-        try {
-            return Signature.getInstance(algorithmName, CRYPTO_PROVIDER_NAME);
-        } catch (NoSuchAlgorithmException e) {
-            throw new CommonSignFailureException("Криптопровайдер не поддерживает алгоритм: " + algorithmName, e);
-        } catch (NoSuchProviderException e) {
-            throw new CommonSignFailureException("Провайдер BouncyCastle не установлен", e);
-        }
+         return Signature.getInstance(algorithmName, CRYPTO_PROVIDER_NAME);
     }
 
     public static boolean digestVerify(SOAPBody soapBody) {
@@ -405,7 +392,7 @@ public class CryptoUtil {
         try {
             canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
         } catch (InvalidCanonicalizerException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
 
         try {
@@ -415,7 +402,7 @@ public class CryptoUtil {
             String encodedSignatureValue = XPathUtil.evaluateString("ds:SignatureValue/text()", signatureElement, new DSNamespaceContext());
 
             if (encodedSignatureValue == null) {
-                throw new CommonSignRuntimeException("retreiving encoded signature value");
+                throw new RuntimeException("retreiving encoded signature value");
             }
 
             byte[] decodedSignatureValue = Base64Util.getBase64Decoded(encodedSignatureValue.trim());
@@ -423,32 +410,32 @@ public class CryptoUtil {
             final String signatureMethodAlgorithm = XPathUtil.evaluateString("ds:SignatureMethod/@Algorithm", signedInfoElement, new DSNamespaceContext());
 
             if (signatureMethodAlgorithm == null) {
-                throw new CommonSignRuntimeException("retrieving signautre method algorithm");
+                throw new RuntimeException("retrieving signautre method algorithm");
             }
 
             Signature signatureEngine;
 
             try {
                 signatureEngine = getSignatureInstance(signAlgorithmType);
-            } catch (CommonSignFailureException e) {
-                throw new CommonSignRuntimeException(e);
+            } catch (GeneralSecurityException e) {
+                throw new RuntimeException(e);
             }
 
             try {
                 signatureEngine.initVerify(x509Certificate);
             } catch (InvalidKeyException e) {
-                throw new CommonSignRuntimeException(e);
+                throw new RuntimeException(e);
             }
 
             try {
                 signatureEngine.update(canonicalizedSignedInfo);
             } catch (SignatureException e) {
-                throw new CommonSignRuntimeException(e);
+                throw new RuntimeException(e);
             }
 
             signedInfoValid = signatureEngine.verify(decodedSignatureValue);
         } catch (CanonicalizationException | SignatureException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
 
         return signedInfoValid;

@@ -9,6 +9,7 @@ import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.exception.CommonSignFailureException;
 import ru.i_novus.common.sign.util.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.security.*;
@@ -29,8 +30,8 @@ public class CryptoTest {
     }
 
     @Test
-    public void testAllAlgorithms() throws CommonSignFailureException {
-        String basePath = IOUtil.createTempDirectory("keys").toString();
+    public void testAllAlgorithms() throws IOException, GeneralSecurityException {
+        String basePath = Files.createTempDirectory("keys").toString();
         for (SignAlgorithmType signAlgorithm : SignAlgorithmType.values()) {
             if (signAlgorithm.getAvailableParameterSpecificationNames().isEmpty()) {
                 testOneAlgorithm(signAlgorithm, null, basePath);
@@ -42,7 +43,7 @@ public class CryptoTest {
         }
     }
 
-    private void testOneAlgorithm(final SignAlgorithmType signAlgorithm, final String parameterSpecName, final String basePath) throws CommonSignFailureException {
+    private void testOneAlgorithm(final SignAlgorithmType signAlgorithm, final String parameterSpecName, final String basePath) throws IOException, GeneralSecurityException {
         KeyPair keyPair = CryptoUtil.generateKeyPair(signAlgorithm, parameterSpecName);
         checkKeyPair(keyPair);
 
@@ -71,8 +72,8 @@ public class CryptoTest {
 
             logger.info("Path to certificates and keys: {}", basePath);
         } finally {
-            IOUtil.fileDelete(keyPath);
-            IOUtil.fileDelete(crtPath);
+            Files.delete(Paths.get(keyPath));
+            Files.delete(Paths.get(crtPath));
         }
     }
 

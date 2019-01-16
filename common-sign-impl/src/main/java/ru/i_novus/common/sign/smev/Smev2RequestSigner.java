@@ -1,5 +1,7 @@
 package ru.i_novus.common.sign.smev;
 
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import ru.i_novus.common.sign.GostXmlSignature;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.exception.CommonSignFailureException;
@@ -12,8 +14,10 @@ import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -44,9 +48,10 @@ public final class Smev2RequestSigner {
 
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 2
-     * @param message     сообщение
-     * @param pfxEncoded  двоичные данные файла файла PKCS#12 закодированный в Base64
-     * @param password    пароль к закрытому ключу
+     *
+     * @param message    сообщение
+     * @param pfxEncoded двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param password   пароль к закрытому ключу
      * @throws CommonSignFailureException
      * @throws InvalidSiginigObjectException
      */
@@ -69,7 +74,6 @@ public final class Smev2RequestSigner {
         }
     }
 
-
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 2
      *
@@ -87,16 +91,41 @@ public final class Smev2RequestSigner {
             // Проставляем идентификатор для элемента Body
             setBodyIdAttribute(message.getSOAPBody());
 
+            SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
+
+            // Добавляем элемент Security
+            GostXmlSignature.addSecurityElement(message, CryptoFormatConverter.getInstance().getPEMEncodedCertificate(certificate),
+                    "http://smev.gosuslugi.ru/actors/smev", signAlgorithmType);
+            // Подписываем сообщение
+            GostXmlSignature.sign(message, privateKey, signAlgorithmType);
+
         } catch (SOAPException | RuntimeException e) {
             throw new CommonSignFailureException(e);
         }
 
-        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
-        // Добавляем элемент Security
-        GostXmlSignature.addSecurityElement(message, CryptoFormatConverter.getInstance().getPEMEncodedCertificate(certificate),
-                "http://smev.gosuslugi.ru/actors/smev", signAlgorithmType);
-        // Подписываем сообщение
-        GostXmlSignature.sign(message, privateKey, signAlgorithmType);
+    }
+
+    /**
+     * Подписывает SOAP-запрос для сервиса СМЭВ 2
+     *
+     * @param message сообщение
+     * @param encodedCertificate сертификат
+     * @param encodedKey закрытый ключ в формате PEM
+     * @throws SOAPException
+     * @throws InvalidCanonicalizerException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws CanonicalizationException
+     * @throws IOException
+     */
+    @Deprecated
+    public static void signSmevRequest(SOAPMessage message, String encodedCertificate, String encodedKey) throws SOAPException,
+            InvalidCanonicalizerException, GeneralSecurityException, TransformerException, CanonicalizationException, IOException {
+        try {
+            signWithPEM(message, encodedCertificate, encodedKey);
+        } catch (CommonSignFailureException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void addNamespaceDeclaration(SOAPEnvelope soapEnvelope) throws SOAPException {

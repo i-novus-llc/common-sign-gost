@@ -2,8 +2,6 @@ package ru.i_novus.common.sign.util;
 
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Node;
-import ru.i_novus.common.sign.exception.CommonSignRuntimeException;
-
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPath;
@@ -17,11 +15,11 @@ public class XPathUtil {
         throw new InstantiationError("Must not instantiate this class");
     }
 
-    public static Node selectSingleNode(Node contextNode, String str) throws CommonSignRuntimeException {
+    public static Node selectSingleNode(Node contextNode, String str) {
         try {
             return XPathAPI.selectSingleNode(contextNode, str, contextNode);
         } catch (TransformerException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -36,7 +34,7 @@ public class XPathUtil {
         try {
             return (Node) xpath.evaluate(expression, itemNode, XPathConstants.NODE);
         } catch (XPathExpressionException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -51,7 +49,7 @@ public class XPathUtil {
         try {
             return (String) xpath.evaluate(expression, itemNode, XPathConstants.STRING);
         } catch (XPathExpressionException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 }

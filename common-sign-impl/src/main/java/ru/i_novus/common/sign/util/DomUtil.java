@@ -5,7 +5,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import ru.i_novus.common.sign.exception.CommonSignRuntimeException;
 import ru.i_novus.common.sign.smev.SmevTransformSpi;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -26,7 +25,7 @@ public class DomUtil {
         try {
             return dbf.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            throw new CommonSignRuntimeException("SMEV3 Signer Integration.", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -61,7 +60,7 @@ public class DomUtil {
             org.apache.xml.security.utils.XMLUtils.outputDOM(contextNode, baos, false);
             return baos.toByteArray();
         } catch (IOException e) {
-            throw new CommonSignRuntimeException(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -88,10 +87,10 @@ public class DomUtil {
                 resultBytes = out.toByteArray();
 
             } catch (TransformationException e) {
-                throw new CommonSignRuntimeException("Не удалось преобразовать объект класса org.w3c.dom.Element в строку, в соответствии с требованиями методических рекомендаций 3.*", e);
+                throw new RuntimeException("Не удалось преобразовать объект класса org.w3c.dom.Element в строку, в соответствии с требованиями методических рекомендаций 3.*", e);
             }
         } catch (IOException e) {
-            throw new CommonSignRuntimeException("Cannot process transformed xml", e);
+            throw new RuntimeException("Cannot process transformed xml", e);
         }
 
         return resultBytes;

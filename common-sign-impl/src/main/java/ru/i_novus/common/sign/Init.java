@@ -8,7 +8,6 @@ import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.utils.XMLUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.i_novus.common.sign.api.GostIds;
-import ru.i_novus.common.sign.exception.CommonSignRuntimeException;
 import ru.i_novus.common.sign.smev.SmevTransformSpi;
 
 import java.lang.reflect.Field;
@@ -95,7 +94,7 @@ public final class Init {
                 f.setAccessible(true);
 
             } catch (NoSuchFieldException e) {
-                throw new CommonSignRuntimeException(e);
+                throw new RuntimeException(e);
             }
         }
     }
@@ -109,7 +108,7 @@ public final class Init {
             charset.setAccessible(true);
             charset.set(null, null);
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new CommonSignRuntimeException("Не удалось настроить кодировку "+ fileEncoding, e);
+            throw new RuntimeException("Не удалось настроить кодировку "+ fileEncoding, e);
         }
     }
 }

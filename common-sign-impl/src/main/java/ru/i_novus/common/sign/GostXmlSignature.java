@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -34,11 +35,9 @@ public class GostXmlSignature {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static void addSecurityElement(SOAPMessage message, String encodedCertificate, String actor, SignAlgorithmType signAlgorithmType) throws CommonSignFailureException {
+    public static void addSecurityElement(SOAPMessage message, String encodedCertificate, String actor, SignAlgorithmType signAlgorithmType) throws CommonSignFailureException, SOAPException {
         // Добавляем элемент Security
         SOAPElement security;
-
-        try {
 
             if (StringUtils.isBlank(actor)) {
                 security = message.getSOAPHeader().addChildElement("Security", "wsse");
@@ -82,13 +81,9 @@ public class GostXmlSignature {
                     .addAttribute(new QName("ValueType"), X509_V3_TYPE)
                     .addAttribute(new QName("wsu:Id"), "CertId")
                     .addTextNode(encodedCertificate);
-
-        } catch (SOAPException | RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
-        }
     }
 
-    public static void addSecurityElement(SOAPMessage message, X509Certificate certificate, String actor) throws CommonSignFailureException {
+    public static void addSecurityElement(SOAPMessage message, X509Certificate certificate, String actor) throws CommonSignFailureException, SOAPException {
         addSecurityElement(message, CryptoFormatConverter.getInstance().getPEMEncodedCertificate(certificate), actor, SignAlgorithmType.findByCertificate(certificate));
     }
 
@@ -120,7 +115,7 @@ public class GostXmlSignature {
             ((SOAPElement) XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='SignatureValue']"))
                     .addTextNode(getBase64EncodedString(signature));
 
-        } catch (TransformerException | InvalidCanonicalizerException | CanonicalizationException | SOAPException | IOException | RuntimeException e) {
+        } catch (TransformerException | InvalidCanonicalizerException | CanonicalizationException | SOAPException | IOException | GeneralSecurityException | RuntimeException e) {
             throw new CommonSignFailureException(e);
         }
     }

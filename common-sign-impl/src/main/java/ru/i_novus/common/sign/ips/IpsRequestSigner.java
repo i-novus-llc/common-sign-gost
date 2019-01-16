@@ -81,15 +81,15 @@ public final class IpsRequestSigner {
 
             addToElem(message, soapService);
 
+            SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());
+            // Добавляем элемент Security
+            GostXmlSignature.addSecurityElement(message, certificate, null);
+            // Подписываем сообщение
+            GostXmlSignature.sign(message, privateKey, signAlgorithmType);
+
         } catch (SOAPException | TransformerException | RuntimeException e) {
             throw new CommonSignFailureException(e);
         }
-
-        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());
-        // Добавляем элемент Security
-        GostXmlSignature.addSecurityElement(message, certificate, null);
-        // Подписываем сообщение
-        GostXmlSignature.sign(message, privateKey, signAlgorithmType);
     }
 
     /**
@@ -126,14 +126,14 @@ public final class IpsRequestSigner {
             // Добавляем элемент MessageID
             addMessageIdElem(message.getSOAPHeader());
 
+            // Добавляем элемент Security
+            GostXmlSignature.addSecurityElement(message, certificate, null);
+            // Подписываем сообщение
+            GostXmlSignature.sign(message, privateKey, SignAlgorithmType.findByCertificate(certificate));
+
         } catch (SOAPException | TransformerException | RuntimeException e) {
             throw new CommonSignFailureException(e);
         }
-
-        // Добавляем элемент Security
-        GostXmlSignature.addSecurityElement(message, certificate, null);
-        // Подписываем сообщение
-        GostXmlSignature.sign(message, privateKey, SignAlgorithmType.findByCertificate(certificate));
     }
 
     private static void addMessageIdElem(SOAPHeader soapHeader) throws TransformerException, SOAPException {
@@ -166,7 +166,7 @@ public final class IpsRequestSigner {
             message.getSOAPHeader().addChildElement("To", "wsa").addTextNode(soapService);
     }
 
-    private static void setBodyIdAttribute(SOAPBody soapBody){
+    private static void setBodyIdAttribute(SOAPBody soapBody) {
         soapBody.setAttribute("wsu:Id", "body");
     }
 
