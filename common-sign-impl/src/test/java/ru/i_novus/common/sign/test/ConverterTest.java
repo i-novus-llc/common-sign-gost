@@ -44,12 +44,12 @@ public class ConverterTest {
 
         byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
         Path file = Files.createTempFile("signature", ".sig");
-        try {
+        try (InputStream fileInputStream = new FileInputStream(file.toFile())) {
             Files.write(file, signResult);
             logger.info("file name: {}", file.toString());
 
             Verifier verifier = Verifier.getInstance();
-            boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(new FileInputStream(file.toFile())));
+            boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(fileInputStream));
             assertTrue(valid);
         } finally {
             Files.delete(file);

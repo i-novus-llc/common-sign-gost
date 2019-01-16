@@ -1,8 +1,7 @@
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
-        <ns2:GetRequestRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
-                               xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
-            <MessageTypeSelector Id="SIGNED_BY_CALLER">
+        <ns2:GetRequestRequest xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+            <MessageTypeSelector xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2" Id="SIGNED_BY_CALLER">
                 <NamespaceURI>http://egisz.rosminzdrav.ru/smev/iehr/GetArchivedMedicalDocuments/1.0.2</NamespaceURI>
                 <RootElementLocalName>InputData</RootElementLocalName>
                 <Timestamp>2018-09-20T16:22:14.058+03:00</Timestamp>

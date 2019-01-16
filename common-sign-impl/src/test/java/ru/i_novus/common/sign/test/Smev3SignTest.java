@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Node;
 import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.smev.Smev3RequestSigner;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
+import ru.i_novus.common.sign.util.XPathUtil;
 
+import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPMessage;
 import java.io.InputStream;
@@ -19,6 +22,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static ru.i_novus.common.sign.test.SoapUtil.getSoapMessageContent;
 
 @Slf4j
@@ -113,16 +117,30 @@ public class Smev3SignTest {
     }
 
     @SneakyThrows
-    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate, String action) {
-        logger.info("SMEV3 {} message before {} signature: {}", action, certificate.getSigAlgName(), getSoapMessageContent(message));
-        Smev3RequestSigner.signSmev3Request(message, privateKey, certificate);
-        logger.info("SMEV3 {} message after {} signature: {}", action, certificate.getSigAlgName(), getSoapMessageContent(message));
+    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate x509Certificate, String action) {
 
-        checkSignedMessage(message);
+        assertNotNull(message);
+
+        logger.info("SMEV3 {} message before {} signature: {}", action, x509Certificate.getSigAlgName(), getSoapMessageContent(message));
+        Smev3RequestSigner.sign(message, privateKey, x509Certificate);
+        logger.info("SMEV3 {} message after {} signature: {}", action, x509Certificate.getSigAlgName(), getSoapMessageContent(message));
+
+        SOAPBody soapBody = message.getSOAPBody();
+
+        checkSignedMessage(soapBody, x509Certificate);
+
+        Node callerInformationSystemSignatureNode = XPathUtil.selectSingleNode(soapBody, "//*[local-name() = '" + Smev3RequestSigner.NODE_CALLER_INFORMATION_SYSTEM_SIGNATURE + "']");
+        callerInformationSystemSignatureNode.getParentNode().removeChild(callerInformationSystemSignatureNode);
     }
 
-    private void checkSignedMessage(SOAPMessage message) {
-        assertNotNull(message);
+    @SneakyThrows
+    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate) {
+
+        assertNotNull(soapBody);
+
+        assertTrue(CryptoUtil.digestVerify(soapBody));
+
+        assertTrue(CryptoUtil.signVerify(x509Certificate, soapBody));
     }
 
     private SOAPMessage getAckRequest() {
