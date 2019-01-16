@@ -24,11 +24,13 @@ final class SoapUtil {
     }
 
     static String getSoapMessageContent(SOAPMessage message) {
+        String content;
         try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             message.writeTo(outputStream);
-            return outputStream.toString().replace("&#13;", "");
+            content = outputStream.toString().replace("&#13;", "");
         } catch (SOAPException | IOException e) {
             throw new RuntimeException(e);
         }
+        return content;
     }
 }
