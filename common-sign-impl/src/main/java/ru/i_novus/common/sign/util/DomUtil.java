@@ -1,5 +1,6 @@
 package ru.i_novus.common.sign.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.transforms.TransformationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -12,10 +13,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 
+@Slf4j
 public class DomUtil {
 
     private DomUtil() {
-        throw new InstantiationError("Must not instantiate this class");
+        // не позволяет создать экземпляр класса, класс утилитный
     }
 
     public static DocumentBuilder newDocumentBuilder() {

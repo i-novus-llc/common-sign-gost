@@ -58,7 +58,7 @@ public class Smev2SignTest {
     private void testSignSmev2Request(PrivateKey privateKey, X509Certificate certificate) {
         SOAPMessage message = getSmev2Request();
         logger.info("SMEV2 Request message before signature: {}", getSoapMessageContent(message));
-        Smev2RequestSigner.sign(message, privateKey, certificate);
+        Smev2RequestSigner.signSmevRequest(message, privateKey, certificate);
 
         logger.info("SMEV2 Request message after signature: {}", getSoapMessageContent(message));
         checkSignedMessage(message);

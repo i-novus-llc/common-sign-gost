@@ -6,7 +6,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
-import ru.i_novus.common.sign.exception.CommonSignFailureException;
 import ru.i_novus.common.sign.util.*;
 
 import java.io.IOException;
