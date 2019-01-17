@@ -8,10 +8,17 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import ru.i_novus.common.sign.smev.SmevTransformSpi;
 
-import javax.xml.parsers.DocumentBuilder;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 public class DomUtil {
@@ -20,19 +27,9 @@ public class DomUtil {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static DocumentBuilder newDocumentBuilder() {
-
+    public static Document newDocument() throws ParserConfigurationException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        try {
-            return dbf.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Document newDocument() {
-        return newDocumentBuilder().newDocument();
+        return dbf.newDocumentBuilder().newDocument();
     }
 
     /**
@@ -57,26 +54,23 @@ public class DomUtil {
         return rootNode;
     }
 
-    public static byte[] nodeToByte(Node contextNode) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            org.apache.xml.security.utils.XMLUtils.outputDOM(contextNode, baos, false);
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /**
      * Возвращает массив байтов трансформированного XML-элемента, в соответствии с требованиями методических рекомендаций 3.*
      *
      * @param untransformedElement объект элемента для обработки
      * @return строкое представление XML элемента, преобразованного в соответствии с требованиями методических рекомендаций 3.*
+     * @return
+     * @throws IOException
+     * @throws TransformationException
+     * @throws TransformerException
      */
-    public static byte[] getTransformedXml(Element untransformedElement) {
+    public static byte[] getTransformedXml(Element untransformedElement) throws IOException, TransformationException, TransformerException {
 
         SmevTransformSpi transform = new SmevTransformSpi();
 
-        byte[] untransformedElementBytes = nodeToByte(untransformedElement);
+        final String untransformedXml = DomUtil.elementToString(untransformedElement, StandardCharsets.UTF_8);
+
+        byte[] untransformedElementBytes = untransformedXml.getBytes(UTF_8);
 
         byte[] resultBytes;
 
@@ -87,14 +81,34 @@ public class DomUtil {
                 transform.process(inputStream, out);
 
                 resultBytes = out.toByteArray();
-
-            } catch (TransformationException e) {
-                throw new RuntimeException("Не удалось преобразовать объект класса org.w3c.dom.Element в строку, в соответствии с требованиями методических рекомендаций 3.*", e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot process transformed xml", e);
         }
 
         return resultBytes;
+    }
+
+    /**
+     * Возвращает строку преобразованная из объекта класса org.w3c.dom.Element
+     *
+     * @param element     объект элемента для обработки
+     * @param xmlEncoding кодировка, которая задаётся в объявлении XML
+     * @return строкое представление XML элемента
+     * @throws TransformerConfigurationException
+     */
+    public static String elementToString(final Element element, final Charset xmlEncoding) throws TransformerException {
+
+        TransformerFactory factory = TransformerFactory.newInstance();
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+        Transformer tf = factory.newTransformer();
+        tf.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        tf.setOutputProperty(OutputKeys.INDENT, "yes");
+        tf.setOutputProperty(OutputKeys.ENCODING, xmlEncoding.name());
+
+        StringWriter writer = new StringWriter();
+
+        tf.transform(new DOMSource(element), new StreamResult(writer));
+
+        return writer.toString();
     }
 }

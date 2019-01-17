@@ -1,13 +1,13 @@
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
-        <ns2:SendResponseRequest xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
-            <ns2:SenderProvidedResponseData Id="SIGNED_BY_PROVIDER"
-                                            xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+        <ns2:SendResponseRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
+                                 xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+            <ns2:SenderProvidedResponseData Id="SIGNED_BY_PROVIDER">
                 <ns2:MessageID>c8aac01f-bc02-11e8-af1e-005056b1e729</ns2:MessageID>
                 <ns2:To>
                     eyJzaWQiOjMwOTQ3LCJtaWQiOiJiZjA0Y2YyYS1iYzAyLTExZTgtOTc2OC0wMDUwNTZiMTM2MGYiLCJlb2wiOjAsInNsYyI6ImVnaXN6LnJvc21pbnpkcmF2LnJ1X3NtZXZfaWVocl9HZXRBcmNoaXZlZE1lZGljYWxEb2N1bWVudHNfMS4wLjJfSW5wdXREYXRhIiwibW5tIjoiTVpSVjAxIn0=
                 </ns2:To>
-                <MessagePrimaryContent xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2">
+                <MessagePrimaryContent>
                     <OutputData xmlns="http://egisz.rosminzdrav.ru/smev/iehr/GetArchivedMedicalDocuments/1.0.2">
                         <DocumentList>
                             <Document>

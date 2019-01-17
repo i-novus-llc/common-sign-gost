@@ -3,6 +3,7 @@ package ru.i_novus.common.sign.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
@@ -11,6 +12,7 @@ import ru.i_novus.common.sign.context.DSNamespaceContext;
 import javax.xml.soap.SOAPBody;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
@@ -23,14 +25,14 @@ public class SoapVerifier {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static boolean verifyDigest(SOAPBody soapBody, final String referenceUriAttributeName) throws TransformerException, XPathExpressionException {
+    public static boolean verifyDigest(SOAPBody soapBody, final String referenceUriAttributeName) throws TransformerException, XPathExpressionException, IOException, TransformationException {
         DSNamespaceContext dsNamespaceContext = new DSNamespaceContext();
         Element signatureElem = (Element) XPathUtil.evaluate("//*[local-name() = 'Signature']", soapBody, dsNamespaceContext);
         Element contentElem = (Element) XPathAPI.selectSingleNode(soapBody, "//*[attribute::*[contains(local-name(), '" + referenceUriAttributeName + "' )]]");
         return verifyDigest(contentElem, signatureElem);
     }
 
-    public static boolean verifyDigest(Element contentElem, Element signatureElem) throws XPathExpressionException {
+    public static boolean verifyDigest(Element contentElem, Element signatureElem) throws XPathExpressionException, TransformationException, TransformerException, IOException {
 
         final String digestValue = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestValue/text()", signatureElem, new DSNamespaceContext());
 

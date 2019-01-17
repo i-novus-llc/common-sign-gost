@@ -3,6 +3,7 @@ package ru.i_novus.common.sign.smev;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -12,6 +13,7 @@ import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.smev.enums.Smev3ConvertEnum;
 import ru.i_novus.common.sign.util.*;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.*;
 import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
@@ -43,8 +45,9 @@ public final class Smev3RequestSigner {
      * @throws SOAPException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws ParserConfigurationException
      */
-    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String password) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
+    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String password) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException, ParserConfigurationException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
@@ -68,8 +71,10 @@ public final class Smev3RequestSigner {
      * @throws SOAPException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static void signSmev3Request(SOAPMessage message, String pemEncodedCertificate, String pemEncodedPrivateKey) throws XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
+    public static void signSmev3Request(SOAPMessage message, String pemEncodedCertificate, String pemEncodedPrivateKey) throws XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
         CryptoFormatConverter converter = CryptoFormatConverter.getInstance();
         X509Certificate certificate = converter.getCertificateFromPEMEncoded(pemEncodedCertificate);
@@ -89,8 +94,10 @@ public final class Smev3RequestSigner {
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static Element signSmev3Request(Element contentElement, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException {
+    public static Element signSmev3Request(Element contentElement, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
         CryptoFormatConverter cryptoFormatConverter = CryptoFormatConverter.getInstance();
 
         X509Certificate x509Certificate = cryptoFormatConverter.getCertificateFromPEMEncoded(pemEncodedCertificate);
@@ -115,8 +122,9 @@ public final class Smev3RequestSigner {
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws ParserConfigurationException
      */
-    public static Element signSmev3RequestWithPkcs12(Element contentElement, String pfxEncoded, String password) throws IOException, XMLSecurityException, GeneralSecurityException, TransformerException {
+    public static Element signSmev3RequestWithPkcs12(Element contentElement, String pfxEncoded, String password) throws IOException, XMLSecurityException, GeneralSecurityException, TransformerException, ParserConfigurationException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
@@ -140,8 +148,10 @@ public final class Smev3RequestSigner {
      * @throws GeneralSecurityException
      * @throws XMLSecurityException
      * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static void sign(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException, GeneralSecurityException, XMLSecurityException, TransformerException {
+    public static void sign(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException, GeneralSecurityException, XMLSecurityException, TransformerException, IOException, ParserConfigurationException {
 
         SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
         SOAPBody soapBody = envelope.getBody();
@@ -169,8 +179,10 @@ public final class Smev3RequestSigner {
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static Element sign(Element contentElement, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException {
+    public static Element sign(Element contentElement, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
         final String contentElementId = contentElement.getAttribute(REFERENCE_URI_ATTRIBUTE_NAME);
 
@@ -223,8 +235,10 @@ public final class Smev3RequestSigner {
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException {
+    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
         String pemEncodedCertificate = CryptoFormatConverter.getInstance().getPEMEncodedCertificate(x509Certificate);
 
@@ -243,8 +257,10 @@ public final class Smev3RequestSigner {
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
+     * @throws ParserConfigurationException
+     * @throws IOException
      */
-    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException {
+    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, ParserConfigurationException, IOException {
 
         Element contentElement = (Element) XPathAPI.selectSingleNode(document, "//*[attribute::*[contains(local-name(), '" + REFERENCE_URI_ATTRIBUTE_NAME + "') and starts-with(., 'SIGNED_BY_')]]");
 
@@ -290,9 +306,9 @@ public final class Smev3RequestSigner {
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @param signAlgorithmType     тип алгоритма ЭП
      * @return
-     * @throws RuntimeException
+     * @throws ParserConfigurationException
      */
-    private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) {
+    private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) throws ParserConfigurationException {
 
         Document document = DomUtil.newDocument();
 
@@ -348,8 +364,10 @@ public final class Smev3RequestSigner {
      * @param signatureElem     объект элемента Signature
      * @param signAlgorithmType тип алгоритма ЭП
      * @throws TransformerException
+     * @throws IOException
+     * @throws TransformationException
      */
-    private static void genericDigestValue(final Element content2sign, final Element signatureElem, SignAlgorithmType signAlgorithmType) throws TransformerException {
+    private static void genericDigestValue(final Element content2sign, final Element signatureElem, SignAlgorithmType signAlgorithmType) throws TransformerException, IOException, TransformationException {
 
         /* получение строки трансформированного XML-элемента, в соответствии с требованиями методических рекомендаций СМЭВ */
         byte[] transformedRootElementBytes = DomUtil.getTransformedXml(content2sign);
