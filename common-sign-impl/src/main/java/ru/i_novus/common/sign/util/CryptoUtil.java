@@ -2,9 +2,6 @@ package ru.i_novus.common.sign.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.exceptions.XMLSecurityException;
-import org.apache.xpath.XPathAPI;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x509.Extension;
@@ -35,13 +32,7 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
-import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
-import ru.i_novus.common.sign.context.DSNamespaceContext;
-
-import javax.xml.soap.SOAPBody;
-import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -208,6 +199,31 @@ public class CryptoUtil {
     }
 
     /**
+     * Формирует хэш данных для файла
+     *
+     * @param fileBytes входные данные
+     * @return хэш в base64
+     */
+    public static byte[] getFileDigest(byte[] fileBytes, SignAlgorithmType signAlgorithmType) {
+
+        ExtendedDigest extendedDigest = fillDigest(signAlgorithmType);
+
+        final String algorithmName = extendedDigest.getAlgorithmName();
+
+        MessageDigest digest;
+
+        try {
+            digest = MessageDigest.getInstance(algorithmName);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new RuntimeException("Криптопровайдер не поддерживает алгоритм:" + algorithmName, ex);
+        }
+
+        digest.update(fileBytes);
+
+        return digest.digest();
+    }
+
+    /**
      * Формирует хэш данных для заданного алгоритма
      *
      * @param inputStream входные данные
@@ -275,13 +291,6 @@ public class CryptoUtil {
      * @param privateKey        закрытый ключ
      * @param signAlgorithmType параметры алгоритма подписи
      * @return подпись
-     * @throws CommonSignFailureException
-     */
-    /**
-     * @param data
-     * @param privateKey
-     * @param signAlgorithmType
-     * @return
      * @throws GeneralSecurityException
      */
     public static byte[] getSignature(byte[] data, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {

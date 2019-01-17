@@ -20,6 +20,9 @@ public enum SignAlgorithmType {
     private static final Map<String, String> signatureAlgorithmNames;
     private static final Map<String, List<String>> gostHashAlgorithmOid;
 
+    private static final Map<String, String> hashAlgorithmOids;
+    private static final Map<String, String> encryptionAlgorithmOids;
+
     private static final String ECGOST3410_2012 = "ECGOST3410-2012";
 
     static {
@@ -71,6 +74,16 @@ public enum SignAlgorithmType {
                 "1.2.643.7.1.1.1.1", "1.2.643.7.1.1.6.1"));
         gostHashAlgorithmOid.put(ECGOST3410_2012_512.name(), Arrays.asList("1.2.643.7.1.1.2.3", "1.2.643.7.1.1.3.3",
                 "1.2.643.7.1.1.1.2", "1.2.643.7.1.1.6.2"));
+
+        hashAlgorithmOids = new HashMap<>();
+        hashAlgorithmOids.put(ECGOST3410.name(), "1.2.643.2.2.9");
+        hashAlgorithmOids.put(ECGOST3410_2012_256.name(), "1.2.643.7.1.1.2.2");
+        hashAlgorithmOids.put(ECGOST3410_2012_512.name(), "1.2.643.7.1.1.2.3");
+
+        encryptionAlgorithmOids = new HashMap<>();
+        encryptionAlgorithmOids.put(ECGOST3410.name(), "1.2.643.2.2.19");
+        encryptionAlgorithmOids.put(ECGOST3410_2012_256.name(),"1.2.643.7.1.1.1.1");
+        encryptionAlgorithmOids.put(ECGOST3410_2012_512.name(), "1.2.643.7.1.1.1.2");
     }
 
     public static SignAlgorithmType valueOf(PublicKey publicKey) {
@@ -148,5 +161,13 @@ public enum SignAlgorithmType {
 
     public List<String> getAvailableParameterSpecificationNames() {
         return Collections.unmodifiableList(parameterSpecNames.get(name()));
+    }
+
+    public String getHashAlgorithmOid(){
+        return hashAlgorithmOids.get(name());
+    }
+
+    public String getEncryptionAlgorithmOid(){
+        return encryptionAlgorithmOids.get(name());
     }
 }
