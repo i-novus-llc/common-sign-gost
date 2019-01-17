@@ -88,8 +88,8 @@ public final class Smev3RequestSigner {
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
      *
      * @param contentElement        подписываемый объект элемента
-     * @param pemEncodedPrivateKey  сертификат ЭП в формате PEM
-     * @param pemEncodedCertificate закрытый ключ в формате PEM
+     * @param pemEncodedPrivateKey  закрытый ключ в формате PEM
+     * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @return
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
