@@ -8,6 +8,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.crypto.ExtendedDigest;
@@ -111,6 +112,14 @@ public class CryptoUtil {
         X500Name name = new X500Name(x509Name);
         AsymmetricKeyParameter privateKeyParameter = null;
         AsymmetricKeyParameter publicKeyParameter = null;
+
+        BigInteger serial = BigInteger.ONE; // serial number for self-signed does not matter a lot
+
+        Date notBefore = validFrom == null ? new Date() : validFrom;
+        Date notAfter = validTo == null ? new Date(LocalDateTime.now().plusYears(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo;
+
+        X509v3CertificateBuilder certificateBuilder = null;
+
         if (keyPair.getPublic() instanceof ECPublicKey) {
             ECPublicKey k = (ECPublicKey) keyPair.getPublic();
             ECParameterSpec s = k.getParameters();
@@ -124,24 +133,32 @@ public class CryptoUtil {
             privateKeyParameter = new ECPrivateKeyParameters(
                     kk.getD(),
                     new ECDomainParameters(ss.getCurve(), ss.getG(), ss.getN()));
+
+            certificateBuilder = new JcaX509v3CertificateBuilder(
+                    name, serial,
+                    notBefore,
+                    notAfter,
+                    name, keyPair.getPublic()
+            );
+
         } else if (keyPair.getPublic() instanceof RSAPublicKey) {
+
             RSAPublicKey k = (RSAPublicKey) keyPair.getPublic();
             publicKeyParameter = new RSAKeyParameters(false, k.getModulus(), k.getPublicExponent());
 
             RSAPrivateKey kk = (RSAPrivateKey) keyPair.getPrivate();
             privateKeyParameter = new RSAKeyParameters(true, kk.getModulus(), kk.getPrivateExponent());
+
+            certificateBuilder = new X509v3CertificateBuilder(
+                    name, serial,
+                    notBefore,
+                    notAfter,
+                    name,
+                    SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
         }
 
         if (publicKeyParameter == null)
             return null;
-
-        X509v3CertificateBuilder myCertificateGenerator = new X509v3CertificateBuilder(
-                name,
-                BigInteger.ONE,
-                validFrom == null ? new Date() : validFrom,
-                validTo == null ? new Date(LocalDateTime.now().plusYears(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo,
-                name,
-                SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
 
         DefaultSignatureAlgorithmIdentifierFinder signatureAlgorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
         DefaultDigestAlgorithmIdentifierFinder digestAlgorithmIdentifierFinder = new DefaultDigestAlgorithmIdentifierFinder();
@@ -164,13 +181,13 @@ public class CryptoUtil {
         val = val | KeyUsage.keyAgreement;
         val = val | KeyUsage.keyEncipherment;
         val = val | KeyUsage.nonRepudiation;
-        myCertificateGenerator.addExtension(Extension.keyUsage, true, new KeyUsage(val));
+        certificateBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(val));
 
-        myCertificateGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+        certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
-        myCertificateGenerator.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
+        certificateBuilder.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
 
-        return myCertificateGenerator.build(signerBuilder.build(privateKeyParameter));
+        return certificateBuilder.build(signerBuilder.build(privateKeyParameter));
     }
 
     /**
