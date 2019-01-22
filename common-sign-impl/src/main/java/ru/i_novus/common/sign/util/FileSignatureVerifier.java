@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.*;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -17,6 +18,9 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
+/**
+ * Утилита для верификации подписи файла
+ */
 @Slf4j
 public class FileSignatureVerifier {
 
@@ -26,21 +30,28 @@ public class FileSignatureVerifier {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static boolean verifyPKCS7Signature(DataHandler dataHandler, byte[] signedDataByteArray) throws CMSException, GeneralSecurityException, IOException {
+    /**
+     * Верифицирует значение Digest использованный при подписи
+     * @param dataHandler          интерфейс для получения бинарных данных исходного файла
+     * @param signedDataByteArray  бинарные данные подписи файла
+     * @return
+     * @throws CMSException
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
+    public static boolean verifyDigest(DataHandler dataHandler, byte[] signedDataByteArray) throws CMSException, GeneralSecurityException, IOException {
+
+        byte[] data = StreamUtil.dataHandlerToByteArray(dataHandler);
 
         CMSSignedData signedData = new CMSSignedData(signedDataByteArray);
 
-        X509CertificateHolder x509CertificateHolder = signedData.getCertificates().getMatches(null).stream().findFirst().get();
+        X509Certificate x509Certificate = getX509Certificate(signedData);
 
-        X509Certificate x509Certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(x509CertificateHolder);
+        SignerInformation signerInformation = getSignerInformation(signedData);
 
-        SignerInformationStore signerInformationStore = signedData.getSignerInfos();
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
-        SignerInformation signerInformation = signerInformationStore.getSigners().stream().findFirst().get();
-
-        if (signerInformation.getSignedAttributes() == null) {
-            throw new RuntimeException("Подпись в формате PKCS#7 не содержит подписанных данных!");
-        }
+        final byte[] argDigestedData = CryptoUtil.getFileDigest(data, signAlgorithmType);
 
         ASN1ObjectIdentifier asn1ObjectIdentifier = org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers.pkcs_9_at_messageDigest;
 
@@ -50,27 +61,38 @@ public class FileSignatureVerifier {
 
         byte[] signedDigestedData = oct.getOctets();
 
+        return Arrays.equals(argDigestedData, signedDigestedData);
+    }
+
+    /**
+     * Верифицирует подпись файла
+     * @param signedDataByteArray бинарные данные подписи файла
+     * @return
+     * @throws CMSException
+     * @throws GeneralSecurityException
+     * @throws IOException
+     */
+    public static boolean verifyPKCS7Signature(byte[] signedDataByteArray) throws CMSException, GeneralSecurityException, IOException {
+
+        CMSSignedData signedData = new CMSSignedData(signedDataByteArray);
+
+        X509Certificate x509Certificate = getX509Certificate(signedData);
+
+        SignerInformation signerInformation = getSignerInformation(signedData);
+
         byte[] signatureAsByteArray = signerInformation.getSignature();
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
-        byte[] data = StreamUtil.dataHandlerToByteArray(dataHandler);
-
-        final byte[] argDigestedData = CryptoUtil.getFileDigest(data, signAlgorithmType);
-
-        if (!java.util.Arrays.equals(argDigestedData, signedDigestedData)) {
-            throw new RuntimeException("Дайджест не прошел проверку!");
-        }
-
         boolean signatureIsVerified;
 
-        try (InputStream isCheckData = new ByteArrayInputStream(signerInformation.getEncodedSignedAttributes())) {
+        try (InputStream inputStream = new ByteArrayInputStream(signerInformation.getEncodedSignedAttributes())) {
 
             Signature signature = CryptoUtil.getSignatureInstance(signAlgorithmType);
             signature.initVerify(x509Certificate);
 
             byte[] localBuffer = new byte[BUFFER_SIZE];
-            for (int readBytesCount; (readBytesCount = isCheckData.read(localBuffer)) > 0; ) {
+            for (int readBytesCount; (readBytesCount = inputStream.read(localBuffer)) > 0; ) {
                 signature.update(localBuffer, 0, readBytesCount);
             }
 
@@ -78,5 +100,25 @@ public class FileSignatureVerifier {
         }
 
         return signatureIsVerified;
+    }
+
+    /**
+     * Получает метаданные подписи из объекта CMSSignedData
+     * @param signedData объектное представление подписи
+     * @return
+     */
+    private static SignerInformation getSignerInformation(CMSSignedData signedData) {
+        SignerInformationStore signerInformationStore = signedData.getSignerInfos();
+        return signerInformationStore.getSigners().stream().findFirst().get();
+    }
+
+    /**
+     * Получает метаданные сертификата ЭП из объекта CMSSignedData
+     * @param signedData объектное представление подписи
+     * @return
+     */
+    private static X509Certificate getX509Certificate(CMSSignedData signedData) throws CMSException {
+        X509CertificateHolder x509CertificateHolder = signedData.getCertificates().getMatches(null).stream().findFirst().get();
+        return CryptoFormatConverter.getInstance().getCertificateFromHolder(x509CertificateHolder);
     }
 }

@@ -65,7 +65,9 @@ public class Smev3AttachmentSignTest {
 
         byte[] signedDataByteArray = Smev3AttachmentSigner.signSmev3Attachment(dataHandler, x509Certificate, privateKey);
 
-        assertTrue(FileSignatureVerifier.verifyPKCS7Signature(dataHandler, signedDataByteArray));
+        assertTrue(FileSignatureVerifier.verifyDigest(dataHandler, signedDataByteArray));
+
+        assertTrue(FileSignatureVerifier.verifyPKCS7Signature(signedDataByteArray));
     }
 
     private DataHandler getDataHandler() throws IOException, URISyntaxException {
