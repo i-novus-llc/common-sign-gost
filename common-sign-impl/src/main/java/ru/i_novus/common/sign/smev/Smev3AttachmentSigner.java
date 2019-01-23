@@ -1,6 +1,7 @@
 package ru.i_novus.common.sign.smev;
 
 import ru.i_novus.common.sign.api.SignAlgorithmType;
+import ru.i_novus.common.sign.datatypes.FileSignatureInfo;
 import ru.i_novus.common.sign.util.*;
 import sun.security.pkcs.*;
 import sun.security.x509.AlgorithmId;
@@ -29,7 +30,7 @@ public final class Smev3AttachmentSigner {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static byte[] signSmev3Attachment(DataHandler content, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3Attachment(DataHandler content, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws IOException, GeneralSecurityException {
 
         CryptoFormatConverter cryptoFormatConverter = CryptoFormatConverter.getInstance();
 
@@ -52,7 +53,7 @@ public final class Smev3AttachmentSigner {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static byte[] signSmev3Attachment(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3Attachment(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey) throws IOException, GeneralSecurityException {
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByAlgorithmName(x509Certificate.getSigAlgName());
 
@@ -69,7 +70,7 @@ public final class Smev3AttachmentSigner {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static byte[] signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String password) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String password) throws IOException, GeneralSecurityException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
@@ -94,7 +95,7 @@ public final class Smev3AttachmentSigner {
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    private static byte[] sign(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, GeneralSecurityException {
+    private static FileSignatureInfo sign(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, GeneralSecurityException {
 
         final byte[] attachmentBytes = StreamUtil.dataHandlerToByteArray(content);
 
@@ -102,12 +103,16 @@ public final class Smev3AttachmentSigner {
 
         PKCS7 p7 = sign(attachmentDigest, x509Certificate, privateKey, signAlgorithmType);
 
+        byte[] signaturePKCS7;
+
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 
             p7.encodeSignedData(bos);
 
-            return bos.toByteArray();
+            signaturePKCS7 = bos.toByteArray();
         }
+
+        return new FileSignatureInfo(Base64Util.getBase64EncodedString(attachmentDigest), signaturePKCS7);
     }
 
     /**

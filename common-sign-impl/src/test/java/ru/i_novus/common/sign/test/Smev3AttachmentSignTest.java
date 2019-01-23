@@ -8,6 +8,7 @@ import org.junit.Test;
 import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.activation.ByteArrayDataSource;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
+import ru.i_novus.common.sign.datatypes.FileSignatureInfo;
 import ru.i_novus.common.sign.smev.Smev3AttachmentSigner;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
@@ -63,7 +64,9 @@ public class Smev3AttachmentSignTest {
 
         assertNotNull(dataHandler);
 
-        byte[] signedDataByteArray = Smev3AttachmentSigner.signSmev3Attachment(dataHandler, x509Certificate, privateKey);
+        FileSignatureInfo fileSignatureInfo = Smev3AttachmentSigner.signSmev3Attachment(dataHandler, x509Certificate, privateKey);
+
+        byte[] signedDataByteArray = fileSignatureInfo.getSignaturePKCS7();
 
         assertTrue(FileSignatureVerifier.verifyDigest(dataHandler, signedDataByteArray));
 
