@@ -10,6 +10,7 @@ import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.Security;
@@ -72,6 +73,20 @@ public class CryptoFormatConverter {
     public PrivateKey getPKFromPEMEncoded(SignAlgorithmType signAlgorithmType, String pemEncodedKey) {
         return KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
                 .generatePrivate(new PKCS8EncodedKeySpec(decodePem(pemEncodedKey)));
+    }
+
+    /**
+     * Convert PKCS#12 to PEM encoded certificate
+     *
+     * @param pfxFileEncoded PKCS#12(PFX) file encoded
+     * @return certificate in PEM format
+     */
+    @SneakyThrows
+    public String getPEMEncodedCertificateFromPKCS12(String pfxFileEncoded, String keystorePass){
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxFileEncoded))) {
+            X509Certificate x509Certificate = CryptoIO.getInstance().readCertificateFromPKCS12(inputStream, keystorePass);
+            return getPEMEncodedCertificate(x509Certificate);
+        }
     }
 
     /**
