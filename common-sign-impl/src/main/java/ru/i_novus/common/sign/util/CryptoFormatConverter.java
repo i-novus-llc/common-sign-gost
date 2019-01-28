@@ -10,7 +10,6 @@ import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.Security;

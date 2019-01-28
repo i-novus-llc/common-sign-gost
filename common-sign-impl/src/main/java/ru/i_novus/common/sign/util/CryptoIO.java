@@ -113,7 +113,7 @@ public class CryptoIO {
     }
 
     @SneakyThrows
-    public static KeyStore getPkcs12KeyStore(InputStream inputStream, String keystorePass) {
+    public KeyStore getPkcs12KeyStore(InputStream inputStream, String keystorePass) {
         KeyStore $ex = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
         $ex.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
         return $ex;
