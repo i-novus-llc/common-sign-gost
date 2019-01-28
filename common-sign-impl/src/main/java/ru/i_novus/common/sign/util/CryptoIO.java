@@ -128,11 +128,11 @@ public class CryptoIO {
     @SneakyThrows
     public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
         KeyStore $ex = getPkcs12KeyStore(inputStream, keystorePass);
-        return readCertificateFromPKCS12($ex, keystorePass);
+        return readCertificateFromPKCS12($ex);
     }
 
     @SneakyThrows
-    public X509Certificate readCertificateFromPKCS12(KeyStore keyStore, String keystorePass) {
+    public X509Certificate readCertificateFromPKCS12(KeyStore keyStore) {
         String alias = keyStore.aliases().nextElement();
         Certificate[] chain = keyStore.getCertificateChain(alias);
         return (X509Certificate) chain[chain.length - 1];

@@ -59,7 +59,7 @@ public final class Smev3RequestSigner {
 
             PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
 
             sign(message, privateKey, x509Certificate);
         }
@@ -138,7 +138,7 @@ public final class Smev3RequestSigner {
 
             PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
 
             return sign(contentElement, privateKey, x509Certificate);
         }

@@ -72,7 +72,7 @@ public final class Smev2RequestSigner {
 
             PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
 
             signSmevRequest(message, privateKey, x509Certificate);
         }

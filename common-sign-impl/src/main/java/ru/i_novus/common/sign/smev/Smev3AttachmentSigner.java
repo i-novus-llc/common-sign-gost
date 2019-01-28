@@ -81,7 +81,7 @@ public final class Smev3AttachmentSigner {
 
             PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
 
             return signSmev3Attachment(content, x509Certificate, privateKey);
         }

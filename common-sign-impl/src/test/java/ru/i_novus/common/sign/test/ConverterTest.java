@@ -46,7 +46,7 @@ public class ConverterTest {
             KeyStore $ex = cryptoIO.getPkcs12KeyStore(fileInputStream, password);
 
             PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, password);
-            X509Certificate certificate = cryptoIO.readCertificateFromPKCS12($ex, password);
+            X509Certificate certificate = cryptoIO.readCertificateFromPKCS12($ex);
 
             byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
 
