@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -63,22 +64,24 @@ public final class Smev3AttachmentSigner {
     /**
      * Подписывает файловое вложение для сервиса СМЭВ 3
      *
-     * @param content    данные вложения
-     * @param pfxEncoded двоичные данные файла файла PKCS#12 закодированный в Base64
-     * @param password   пароль к закрытому ключу
+     * @param content          данные вложения
+     * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param keystorePassword пароль к закрытому ключу
      * @return
      * @throws IOException
      * @throws GeneralSecurityException
      */
-    public static FileSignatureInfo signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String password) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String keystorePassword) throws IOException, GeneralSecurityException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(inputStream, password);
+            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(inputStream, password);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
 
             return signSmev3Attachment(content, x509Certificate, privateKey);
         }
