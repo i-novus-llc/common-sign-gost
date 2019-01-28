@@ -16,6 +16,7 @@ import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -52,24 +53,26 @@ public final class Smev2RequestSigner {
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 2
      *
-     * @param message    SOAP-сообщение
-     * @param pfxEncoded двоичные данные файла файла PKCS#12 закодированный в Base64
-     * @param password   пароль к закрытому ключу
+     * @param message          SOAP-сообщение
+     * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param keystorePassword пароль к закрытому ключу
      * @throws IOException
      * @throws XMLSecurityException
      * @throws SOAPException
      * @throws GeneralSecurityException
      * @throws TransformerException
      */
-    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String password) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
+    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(inputStream, password);
+            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(inputStream, password);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex, keystorePassword);
 
             signSmevRequest(message, privateKey, x509Certificate);
         }

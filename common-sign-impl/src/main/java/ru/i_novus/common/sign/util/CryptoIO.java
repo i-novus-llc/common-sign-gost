@@ -113,28 +113,40 @@ public class CryptoIO {
     }
 
     @SneakyThrows
+    public static KeyStore getPkcs12KeyStore(InputStream inputStream, String keystorePass) {
+        KeyStore $ex = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
+        $ex.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
+        return $ex;
+    }
+
+    @SneakyThrows
+    public PrivateKey readPrivateKeyFromPKCS12(KeyStore keyStore, String keystorePass) {
+        final String alias = keyStore.aliases().nextElement();
+        return (PrivateKey) keyStore.getKey(alias, keystorePass == null ? null : keystorePass.toCharArray());
+    }
+
+    @SneakyThrows
+    public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
+        KeyStore $ex = getPkcs12KeyStore(inputStream, keystorePass);
+        return readCertificateFromPKCS12($ex, keystorePass);
+    }
+
+    @SneakyThrows
+    public X509Certificate readCertificateFromPKCS12(KeyStore keyStore, String keystorePass) {
+        String alias = keyStore.aliases().nextElement();
+        Certificate[] chain = keyStore.getCertificateChain(alias);
+        return (X509Certificate) chain[chain.length - 1];
+    }
+
+    @SneakyThrows
     public PrivateKey readPrivateKeyFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore ks = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
-        ks.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
-
-        String alias = ks.aliases().nextElement();
-
-        return (PrivateKey) ks.getKey(alias, keystorePass == null ? null : keystorePass.toCharArray());
+        KeyStore $ex = getPkcs12KeyStore(inputStream, keystorePass);
+        return readPrivateKeyFromPKCS12($ex, keystorePass);
     }
 
     @SneakyThrows
     public X509Certificate readCertificateFromPKCS12(Path filePath, String keystorePass) {
         return readCertificateFromPKCS12(Files.newInputStream(filePath), keystorePass);
-    }
-
-    @SneakyThrows
-    public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore ks = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
-        ks.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
-
-        String alias = ks.aliases().nextElement();
-        Certificate[] chain = ks.getCertificateChain(alias);
-        return (X509Certificate) chain[chain.length - 1];
     }
 
     @SneakyThrows
