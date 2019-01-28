@@ -25,7 +25,7 @@ public class OidAlgorithmTest {
     }
 
     @Test
-    public void fiendHashAlgorithmByOid() throws CertificateException, OperatorCreationException, InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException {
+    public void findHashAlgorithmByOid() throws CertificateException, OperatorCreationException, InvalidAlgorithmParameterException, NoSuchProviderException, NoSuchAlgorithmException {
 
         assertEquals(SignAlgorithmType.findByOid(prepareCert("GostR3410-2001-CryptoPro-A",
                 "GOST3411withECGOST3410", "ECGOST3410").getSigAlgOID()), (SignAlgorithmType.ECGOST3410));
