@@ -1,14 +1,12 @@
 package ru.i_novus.common.sign.smev;
 
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.operator.OperatorCreationException;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.datatypes.FileSignatureInfo;
 import ru.i_novus.common.sign.util.*;
-import sun.security.pkcs.*;
-import sun.security.x509.AlgorithmId;
-
 import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -29,9 +27,11 @@ public final class Smev3AttachmentSigner {
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @return
      * @throws IOException
+     * @throws CMSException
      * @throws GeneralSecurityException
+     * @throws OperatorCreationException
      */
-    public static FileSignatureInfo signSmev3Attachment(DataHandler content, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3Attachment(DataHandler content, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
 
         CryptoFormatConverter cryptoFormatConverter = CryptoFormatConverter.getInstance();
 
@@ -52,9 +52,11 @@ public final class Smev3AttachmentSigner {
      * @param privateKey       закрытый ключ в формате {@link PrivateKey}
      * @return
      * @throws IOException
+     * @throws CMSException
      * @throws GeneralSecurityException
+     * @throws OperatorCreationException
      */
-    public static FileSignatureInfo signSmev3Attachment(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3Attachment(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByAlgorithmName(x509Certificate.getSigAlgName());
 
@@ -69,9 +71,11 @@ public final class Smev3AttachmentSigner {
      * @param keystorePassword пароль к закрытому ключу
      * @return
      * @throws IOException
+     * @throws CMSException
      * @throws GeneralSecurityException
+     * @throws OperatorCreationException
      */
-    public static FileSignatureInfo signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String keystorePassword) throws IOException, GeneralSecurityException {
+    public static FileSignatureInfo signSmev3AttachmentWithPkcs12(DataHandler content, final String pfxEncoded, final String keystorePassword) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
@@ -96,61 +100,18 @@ public final class Smev3AttachmentSigner {
      * @param signAlgorithmType тип алгоритма ЭП
      * @return
      * @throws IOException
+     * @throws CMSException
      * @throws GeneralSecurityException
+     * @throws OperatorCreationException
      */
-    private static FileSignatureInfo sign(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, GeneralSecurityException {
+    private static FileSignatureInfo sign(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, CMSException, GeneralSecurityException, OperatorCreationException {
 
         final byte[] attachmentBytes = org.bouncycastle.util.io.Streams.readAll(content.getInputStream());
 
         final byte[] attachmentDigest = CryptoUtil.getFileDigest(attachmentBytes, signAlgorithmType);
 
-        PKCS7 p7 = sign(attachmentDigest, x509Certificate, privateKey, signAlgorithmType);
-
-        byte[] signaturePKCS7;
-
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-
-            p7.encodeSignedData(bos);
-
-            signaturePKCS7 = bos.toByteArray();
-        }
+        byte[] signaturePKCS7 = CryptoUtil.getCMSSignature(attachmentBytes, privateKey, x509Certificate);
 
         return new FileSignatureInfo(Base64Util.getBase64EncodedString(attachmentDigest), signaturePKCS7);
-    }
-
-    /**
-     * Подписывает файловое вложение для сервиса СМЭВ 3
-     *
-     * @param attachmentDigest  хэш данных вложения
-     * @param x509Certificate   сертификат ЭП в формате {@link X509Certificate}
-     * @param privateKey        закрытый ключ в формате {@link PrivateKey}
-     * @param signAlgorithmType тип алгоритма ЭП
-     * @return
-     * @throws IOException
-     * @throws GeneralSecurityException
-     */
-    private static PKCS7 sign(byte[] attachmentDigest, final X509Certificate x509Certificate, final PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, GeneralSecurityException {
-
-        // Данные для подписи.
-        PKCS9Attributes authenticatedAttributes = PKCS7Util.getPKCS9Attributes(attachmentDigest);
-
-        // Подписываем.
-        byte[] signedAttributes = CryptoUtil.getSignature(authenticatedAttributes.getDerEncoding(), privateKey, signAlgorithmType);
-
-        // Алгоритм подписи.
-        String hashAlgorithmOid = signAlgorithmType.getHashAlgorithmOid();
-
-        AlgorithmId[] digestAlgorithmIds = new AlgorithmId[]{AlgorithmId.get(hashAlgorithmOid)};
-
-        // SignerInfo
-        SignerInfo[] signerInfos = PKCS7Util.getSignerInfos(x509Certificate, authenticatedAttributes, signedAttributes, signAlgorithmType.getEncryptionAlgorithmOid(), hashAlgorithmOid);
-
-        // Сертификат.
-        X509Certificate[] certificates = {x509Certificate};
-
-        ContentInfo contentInfo = new ContentInfo(sun.security.pkcs.ContentInfo.DATA_OID, null);
-
-        // Собираем все вместе и пишем в стрим.
-        return new PKCS7(digestAlgorithmIds, contentInfo, certificates, signerInfos);
     }
 }
