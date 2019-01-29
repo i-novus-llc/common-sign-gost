@@ -7,14 +7,14 @@
     <parent>
         <groupId>ru.i_novus.common</groupId>
         <artifactId>common-sign-parent</artifactId>
-        <version>1.4</version>
+        <version>1.5-SNAPSHOT</version>
     </parent>
 
     <scm>
         <connection>scm:git:https://git.i-novus.ru/util/common-sign.git</connection>
         <url>https://git.i-novus.ru/util/common-sign</url>
         <developerConnection>scm:git:https://git.i-novus.ru/util/common-sign.git</developerConnection>
-        <tag>common-sign-parent-1.4</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
