@@ -359,7 +359,7 @@ public class CryptoUtil {
             case ECGOST3410_2012_512:
                 return new GOST3411_2012_512Digest();
             default:
-                throw new IllegalArgumentException("Unsupported Digest Algorithm:" + signAlgorithmType);
+                throw new IllegalArgumentException("Unsupported Digest Algorithm: " + signAlgorithmType);
         }
     }
 

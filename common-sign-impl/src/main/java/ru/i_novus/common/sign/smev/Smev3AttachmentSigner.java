@@ -77,11 +77,11 @@ public final class Smev3AttachmentSigner {
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
             return signSmev3Attachment(content, x509Certificate, privateKey);
         }
@@ -100,7 +100,7 @@ public final class Smev3AttachmentSigner {
      */
     private static FileSignatureInfo sign(DataHandler content, X509Certificate x509Certificate, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws IOException, GeneralSecurityException {
 
-        final byte[] attachmentBytes = StreamUtil.dataHandlerToByteArray(content);
+        final byte[] attachmentBytes = org.bouncycastle.util.io.Streams.readAll(content.getInputStream());
 
         final byte[] attachmentDigest = CryptoUtil.getFileDigest(attachmentBytes, signAlgorithmType);
 

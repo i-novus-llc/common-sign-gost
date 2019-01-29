@@ -114,9 +114,9 @@ public class CryptoIO {
 
     @SneakyThrows
     public KeyStore getPkcs12KeyStore(InputStream inputStream, String keystorePass) {
-        KeyStore $ex = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
-        $ex.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
-        return $ex;
+        KeyStore keyStore = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
+        keyStore.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
+        return keyStore;
     }
 
     @SneakyThrows
@@ -127,8 +127,8 @@ public class CryptoIO {
 
     @SneakyThrows
     public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore $ex = getPkcs12KeyStore(inputStream, keystorePass);
-        return readCertificateFromPKCS12($ex);
+        KeyStore keyStore = getPkcs12KeyStore(inputStream, keystorePass);
+        return readCertificateFromPKCS12(keyStore);
     }
 
     @SneakyThrows
@@ -140,8 +140,8 @@ public class CryptoIO {
 
     @SneakyThrows
     public PrivateKey readPrivateKeyFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore $ex = getPkcs12KeyStore(inputStream, keystorePass);
-        return readPrivateKeyFromPKCS12($ex, keystorePass);
+        KeyStore keyStore = getPkcs12KeyStore(inputStream, keystorePass);
+        return readPrivateKeyFromPKCS12(keyStore, keystorePass);
     }
 
     @SneakyThrows

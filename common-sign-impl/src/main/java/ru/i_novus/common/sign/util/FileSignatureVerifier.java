@@ -41,7 +41,7 @@ public class FileSignatureVerifier {
      */
     public static boolean verifyDigest(DataHandler dataHandler, byte[] signedDataByteArray) throws CMSException, GeneralSecurityException, IOException {
 
-        byte[] data = StreamUtil.dataHandlerToByteArray(dataHandler);
+        byte[] data = org.bouncycastle.util.io.Streams.readAll(dataHandler.getInputStream());
 
         CMSSignedData signedData = new CMSSignedData(signedDataByteArray);
 

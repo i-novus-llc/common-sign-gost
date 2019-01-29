@@ -55,11 +55,11 @@ public final class Smev3RequestSigner {
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
             sign(message, privateKey, x509Certificate);
         }
@@ -134,11 +134,11 @@ public final class Smev3RequestSigner {
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
             return sign(contentElement, privateKey, x509Certificate);
         }

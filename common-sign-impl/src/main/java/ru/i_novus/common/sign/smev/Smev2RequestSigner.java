@@ -54,7 +54,7 @@ public final class Smev2RequestSigner {
      * Подписывает SOAP-запрос для сервиса СМЭВ 2
      *
      * @param message          SOAP-сообщение
-     * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param pfxEncoded       двоичные данные файла PKCS#12 закодированный в Base64
      * @param keystorePassword пароль к закрытому ключу
      * @throws IOException
      * @throws XMLSecurityException
@@ -62,17 +62,17 @@ public final class Smev2RequestSigner {
      * @throws GeneralSecurityException
      * @throws TransformerException
      */
-    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
+    public static void signSmev2RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            KeyStore $ex = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12($ex, keystorePassword);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12($ex);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
             signSmevRequest(message, privateKey, x509Certificate);
         }
