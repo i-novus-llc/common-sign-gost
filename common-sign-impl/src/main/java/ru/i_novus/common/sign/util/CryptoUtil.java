@@ -318,13 +318,13 @@ public class CryptoUtil {
     }
 
     /**
-     * Подписывает данные ЭП и кодирует ее в base64
+     * Подписывает данные ЭП по ГОСТ 34.10 и кодирует ее в base64
      *
      * @param data              входные данные
      * @param key               закрытый ключ в base64
      * @param signAlgorithmType параметры алгоритма подписи
      * @return подпись в base64
-     * @throws GeneralSecurityException
+     * @throws GeneralSecurityException исключении о невозможности использования переданного ключа и алгоритма подписи с поддерживаемым криптопровайдером
      */
     public static String getBase64Signature(String data, String key, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         PrivateKey privateKey = CryptoFormatConverter.getInstance().getPKFromPEMEncoded(signAlgorithmType, key);
