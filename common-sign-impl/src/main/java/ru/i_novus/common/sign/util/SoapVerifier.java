@@ -76,7 +76,7 @@ public class SoapVerifier {
         String encodedSignatureValue = XPathUtil.evaluateString("ds:SignatureValue/text()", signatureElement, new DSNamespaceContext());
 
         if (encodedSignatureValue == null) {
-            throw new RuntimeException("retreiving encoded signature value");
+            throw new RuntimeException("retrieving encoded signature value");
         }
 
         byte[] decodedSignatureValue = Base64Util.getBase64Decoded(encodedSignatureValue.trim());
@@ -84,7 +84,7 @@ public class SoapVerifier {
         final String signatureMethodAlgorithm = XPathUtil.evaluateString("ds:SignatureMethod/@Algorithm", signedInfoElement, new DSNamespaceContext());
 
         if (signatureMethodAlgorithm == null) {
-            throw new RuntimeException("retrieving signautre method algorithm");
+            throw new RuntimeException("retrieving signature method algorithm");
         }
 
         Signature signatureEngine = CryptoUtil.getSignatureInstance(signAlgorithmType);
