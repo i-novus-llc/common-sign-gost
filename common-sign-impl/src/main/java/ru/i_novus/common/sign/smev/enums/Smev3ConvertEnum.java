@@ -22,10 +22,6 @@ public enum Smev3ConvertEnum {
         this.convertName = convertName;
     }
 
-    public String getConvertName() {
-        return convertName;
-    }
-
     public static Smev3ConvertEnum fromValue(String value) throws IllegalArgumentException {
         for(Smev3ConvertEnum e: Smev3ConvertEnum.values()) {
             if(e.convertName.equals(value)) {

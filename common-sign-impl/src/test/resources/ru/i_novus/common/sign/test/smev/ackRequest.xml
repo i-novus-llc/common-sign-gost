@@ -1,8 +1,8 @@
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
     <soap:Body>
-        <ns2:AckRequest xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
-            <AckTargetMessage xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
-                              Id="SIGNED_BY_CALLER" accepted="true">1987131a-bcc2-11e8-a37c-fa163eb3792e</AckTargetMessage>
+        <ns2:AckRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
+                        xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
+            <AckTargetMessage Id="SIGNED_BY_CALLER" accepted="true">1987131a-bcc2-11e8-a37c-fa163eb3792e</AckTargetMessage>
         </ns2:AckRequest>
     </soap:Body>
 </soap:Envelope>

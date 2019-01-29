@@ -2,7 +2,7 @@
     <soap:Body>
         <ns2:GetResponseRequest xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2"
                                 xmlns:ns2="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/1.2">
-            <MessageTypeSelector Id="SIGNED_BY_CALLER" xmlns="urn://x-artefacts-smev-gov-ru/services/message-exchange/types/basic/1.2">
+            <MessageTypeSelector Id="SIGNED_BY_CALLER">
                 <NamespaceURI>http://epgu.gosuslugi.ru/lk/equeue/3.1.0</NamespaceURI>
                 <RootElementLocalName>equeueEventResponse</RootElementLocalName>
                 <Timestamp>2018-09-20T16:22:49.874+03:00</Timestamp>

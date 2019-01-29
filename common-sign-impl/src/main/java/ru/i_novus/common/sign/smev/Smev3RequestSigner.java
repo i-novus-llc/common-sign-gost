@@ -1,24 +1,26 @@
 package ru.i_novus.common.sign.smev;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.transforms.TransformationException;
+import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
-import ru.i_novus.common.sign.exception.CommonSignFailureException;
-import ru.i_novus.common.sign.exception.InvalidSiginigObjectException;
 import ru.i_novus.common.sign.smev.enums.Smev3ConvertEnum;
 import ru.i_novus.common.sign.util.*;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.*;
+import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
@@ -26,39 +28,40 @@ import static ru.i_novus.common.sign.GostXmlSignature.DS_NS;
 
 public final class Smev3RequestSigner {
 
-    public static final String NODE_CALLER_INFORMATION_SYSTEM_SIGNATURE = "CallerInformationSystemSignature";
-    private static final String URN_SMEV3_MESSAGE_EXCHANGE_TYPES = "urn://x-artefacts-smev-gov-ru/services/message-exchange/types/";
-    private static final String REFERENCE_URI_ID = "Id";
+    public static final String CALLER_INFORM_SYSTEM_SIGNATURE_ELEMENT_NAME = "CallerInformationSystemSignature";
+    public static final String REFERENCE_URI_ATTRIBUTE_NAME = "Id";
+    private static final String SMEV3_MESSAGE_EXCH_TYPES_NAMESPACE_PREFIX = "urn://x-artefacts-smev-gov-ru/services/message-exchange/types/";
 
     private Smev3RequestSigner() {
-        throw new InstantiationError("Must not instantiate this class");
+        // не позволяет создать экземпляр класса, класс утилитный
     }
 
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
      *
-     * @param message    SOAP-сообщение
-     * @param pfxEncoded двоичные данные файла файла PKCS#12 закодированный в Base64
-     * @param password   пароль к закрытому ключу
-     * @throws CommonSignFailureException
-     * @throws InvalidSiginigObjectException
+     * @param message          SOAP-сообщение
+     * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param keystorePassword пароль к закрытому ключу
+     * @throws IOException
+     * @throws XMLSecurityException
+     * @throws SOAPException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws ParserConfigurationException
      */
-    public static void signWithPFX(SOAPMessage message, String pfxEncoded, String password) throws CommonSignFailureException, InvalidSiginigObjectException {
-        try {
+    public static void signSmev3RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException, ParserConfigurationException {
 
-            CryptoIO cryptoIO = CryptoIO.getInstance();
+        CryptoIO cryptoIO = CryptoIO.getInstance();
 
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-                PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(inputStream, password);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-                X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(inputStream, password);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-                sign(message, privateKey, x509Certificate);
-            }
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
-        } catch (IOException | RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
+            sign(message, privateKey, x509Certificate);
         }
     }
 
@@ -68,34 +71,37 @@ public final class Smev3RequestSigner {
      * @param message               сообщение
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @param pemEncodedPrivateKey  закрытый ключ в формате PEM
-     * @throws CommonSignFailureException
-     * @throws InvalidSiginigObjectException
+     * @throws XMLSecurityException
+     * @throws SOAPException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static void signWithPEM(SOAPMessage message, String pemEncodedCertificate, String pemEncodedPrivateKey) throws CommonSignFailureException, InvalidSiginigObjectException {
-        try {
+    public static void signSmev3Request(SOAPMessage message, String pemEncodedCertificate, String pemEncodedPrivateKey) throws XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
-            CryptoFormatConverter converter = CryptoFormatConverter.getInstance();
-            X509Certificate certificate = converter.getCertificateFromPEMEncoded(pemEncodedCertificate);
-            SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
-            PrivateKey pk = converter.getPKFromPEMEncoded(signAlgorithmType, pemEncodedPrivateKey);
+        CryptoFormatConverter converter = CryptoFormatConverter.getInstance();
+        X509Certificate certificate = converter.getCertificateFromPEMEncoded(pemEncodedCertificate);
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(certificate);
+        PrivateKey pk = converter.getPKFromPEMEncoded(signAlgorithmType, pemEncodedPrivateKey);
 
-            sign(message, pk, certificate);
-
-        } catch (RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
-        }
+        sign(message, pk, certificate);
     }
 
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
      *
      * @param contentElement        подписываемый объект элемента
-     * @param pemEncodedPrivateKey  сертификат ЭП в формате PEM
-     * @param pemEncodedCertificate закрытый ключ в формате PEM
+     * @param pemEncodedPrivateKey  закрытый ключ в формате PEM
+     * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @return
-     * @throws CommonSignFailureException
+     * @throws XMLSecurityException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static Element signWithPEM(Element contentElement, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws CommonSignFailureException {
+    public static Element signSmev3Request(Element contentElement, final String pemEncodedPrivateKey, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
         CryptoFormatConverter cryptoFormatConverter = CryptoFormatConverter.getInstance();
 
         X509Certificate x509Certificate = cryptoFormatConverter.getCertificateFromPEMEncoded(pemEncodedCertificate);
@@ -104,7 +110,7 @@ public final class Smev3RequestSigner {
 
         PrivateKey privateKey = cryptoFormatConverter.getPKFromPEMEncoded(signAlgorithmType, pemEncodedPrivateKey);
 
-        final String contentElementId = contentElement.getAttribute(REFERENCE_URI_ID);
+        final String contentElementId = contentElement.getAttribute(REFERENCE_URI_ATTRIBUTE_NAME);
 
         return sign(contentElement.getOwnerDocument(), contentElementId, privateKey, x509Certificate);
     }
@@ -112,29 +118,29 @@ public final class Smev3RequestSigner {
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
      *
-     * @param contentElement подписываемый объект элемента
-     * @param pfxEncoded     двоичные данные файла файла PKCS#12 закодированный в Base64
-     * @param password       пароль к закрытому ключу
+     * @param contentElement   подписываемый объект элемента
+     * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
+     * @param keystorePassword пароль к закрытому ключу
      * @return
-     * @throws CommonSignFailureException
+     * @throws IOException
+     * @throws XMLSecurityException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws ParserConfigurationException
      */
-    public static Element signWithPFX(Element contentElement, String pfxEncoded, String password) throws CommonSignFailureException {
+    public static Element signSmev3RequestWithPkcs12(Element contentElement, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, GeneralSecurityException, TransformerException, ParserConfigurationException {
 
-        try {
+        CryptoIO cryptoIO = CryptoIO.getInstance();
 
-            CryptoIO cryptoIO = CryptoIO.getInstance();
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
 
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxEncoded))) {
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(inputStream, keystorePassword);
 
-                PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(inputStream, password);
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, keystorePassword);
 
-                X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(inputStream, password);
+            X509Certificate x509Certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
 
-                return sign(contentElement, privateKey, x509Certificate);
-            }
-
-        } catch (IOException | RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
+            return sign(contentElement, privateKey, x509Certificate);
         }
     }
 
@@ -144,30 +150,29 @@ public final class Smev3RequestSigner {
      * @param message     SOAP-сообщение
      * @param privateKey  закрытый ключ ЭП
      * @param certificate сертификат ЭП
-     * @throws InvalidSiginigObjectException
-     * @throws CommonSignFailureException
+     * @throws SOAPException
+     * @throws GeneralSecurityException
+     * @throws XMLSecurityException
+     * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static void sign(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws InvalidSiginigObjectException, CommonSignFailureException {
+    public static void sign(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException, GeneralSecurityException, XMLSecurityException, TransformerException, IOException, ParserConfigurationException {
 
-        try {
-            SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
-            SOAPBody soapBody = envelope.getBody();
-            Node actionNode = getActionNode(soapBody);
+        SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
+        SOAPBody soapBody = envelope.getBody();
+        Node actionNode = getActionNode(soapBody);
 
-            Element callerInformationSignature = soapBody.getOwnerDocument().createElementNS(actionNode.getNamespaceURI(), NODE_CALLER_INFORMATION_SYSTEM_SIGNATURE);
-            Node callerSigElement = actionNode.appendChild(callerInformationSignature);
-            callerSigElement.setPrefix("ns2");
+        Element callerInformationSignature = soapBody.getOwnerDocument().createElementNS(actionNode.getNamespaceURI(), CALLER_INFORM_SYSTEM_SIGNATURE_ELEMENT_NAME);
+        Node callerSigElement = actionNode.appendChild(callerInformationSignature);
+        callerSigElement.setPrefix("ns2");
 
-            final String contentElementId = getContentId(actionNode);
+        final String contentElementId = getContentId(actionNode);
 
-            final Element signatureElement = sign(soapBody.getOwnerDocument(), contentElementId, privateKey, certificate);
+        final Element signatureElement = sign(soapBody.getOwnerDocument(), contentElementId, privateKey, certificate);
 
-            // Добавляем элемент CallerInformationSystemSignature
-            callerSigElement.appendChild(soapBody.getOwnerDocument().importNode(signatureElement, true));
-
-        } catch (SOAPException | RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
-        }
+        // Добавляем элемент CallerInformationSystemSignature
+        callerSigElement.appendChild(soapBody.getOwnerDocument().importNode(signatureElement, true));
     }
 
     /**
@@ -177,37 +182,34 @@ public final class Smev3RequestSigner {
      * @param privateKey      закрытый ключ ЭП
      * @param x509Certificate сертификат ЭП
      * @return
-     * @throws CommonSignFailureException
+     * @throws XMLSecurityException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    public static Element sign(Element contentElement, PrivateKey privateKey, X509Certificate x509Certificate) throws CommonSignFailureException {
+    public static Element sign(Element contentElement, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
-        final String contentElementId = contentElement.getAttribute(REFERENCE_URI_ID);
+        final String contentElementId = contentElement.getAttribute(REFERENCE_URI_ATTRIBUTE_NAME);
 
         return sign(contentElement.getOwnerDocument(), contentElementId, privateKey, x509Certificate);
     }
 
-    private static Node getActionNode(Element element) throws InvalidSiginigObjectException {
+    private static Node getActionNode(Element element)  {
 
         Node node = DomUtil.getNodeFirstChild(element);
-
-        if (node != null
-                && Smev3ConvertEnum.fromValue(node.getLocalName()) != null
-                && node.getNamespaceURI() != null
-                && node.getNamespaceURI().startsWith(URN_SMEV3_MESSAGE_EXCHANGE_TYPES)) {
-            return node;
-        }
 
         if (node != null && Smev3ConvertEnum.fromValue(node.getLocalName()) != null) {
 
             final String smevConvertNamespaceURI = node.getNamespaceURI();
 
-            if (smevConvertNamespaceURI != null && smevConvertNamespaceURI.startsWith(URN_SMEV3_MESSAGE_EXCHANGE_TYPES)) {
+            if (smevConvertNamespaceURI.startsWith(SMEV3_MESSAGE_EXCH_TYPES_NAMESPACE_PREFIX)) {
                 return node;
             } else
-                throw new InvalidSiginigObjectException("Некорректный NamespaceURI корневого элемента СМЭВ-конверта");
+                throw new IllegalArgumentException("Некорректный NamespaceURI корневого элемента СМЭВ-конверта");
         }
 
-        throw new InvalidSiginigObjectException("Не найден корневой элемент СМЭВ-конверта");
+        throw new IllegalArgumentException("Не найден корневой элемент СМЭВ-конверта");
     }
 
     private static String getContentId(Node actionNode) {
@@ -217,7 +219,7 @@ public final class Smev3RequestSigner {
             Node node = nodes.item(i);
             if (node instanceof Element) {
                 Element element = (Element) node;
-                String attributeValue = element.getAttribute(REFERENCE_URI_ID);
+                String attributeValue = element.getAttribute(REFERENCE_URI_ATTRIBUTE_NAME);
                 if (!StringUtils.isEmpty(attributeValue)) {
                     id = attributeValue;
                     break;
@@ -230,14 +232,19 @@ public final class Smev3RequestSigner {
 
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
-     * @param document         объект документа
-     * @param referenceUriId   идентификатор подписываемого элемента
-     * @param privateKey       закрытый ключ ЭП
-     * @param x509Certificate  сертификат ЭП
+     *
+     * @param document        объект документа
+     * @param referenceUriId  идентификатор подписываемого элемента
+     * @param privateKey      закрытый ключ ЭП
+     * @param x509Certificate сертификат ЭП
      * @return
-     * @throws CommonSignFailureException
+     * @throws XMLSecurityException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws IOException
+     * @throws ParserConfigurationException
      */
-    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate) throws CommonSignFailureException {
+    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, IOException, ParserConfigurationException {
 
         String pemEncodedCertificate = CryptoFormatConverter.getInstance().getPEMEncodedCertificate(x509Certificate);
 
@@ -246,31 +253,33 @@ public final class Smev3RequestSigner {
 
     /**
      * Подписывает SOAP-запрос для сервиса СМЭВ 3
-     * @param document               объект документа
-     * @param referenceUriId         идентификатор подписываемого элемента
-     * @param privateKey             закрытый ключ ЭП
-     * @param x509Certificate        сертификат ЭП
-     * @param pemEncodedCertificate  сертификат ЭП в формате PEM
+     *
+     * @param document              объект документа
+     * @param referenceUriId        идентификатор подписываемого элемента
+     * @param privateKey            закрытый ключ ЭП
+     * @param x509Certificate       сертификат ЭП
+     * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @return
-     * @throws CommonSignFailureException
+     * @throws XMLSecurityException
+     * @throws GeneralSecurityException
+     * @throws TransformerException
+     * @throws ParserConfigurationException
+     * @throws IOException
      */
-    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate, final String pemEncodedCertificate) throws CommonSignFailureException {
-        try {
-            Element contentElement = (Element) XPathUtil.selectSingleNode(document, "//*[attribute::*[contains(local-name(), '" + REFERENCE_URI_ID + "') and starts-with(., 'SIGNED_BY_')]]");
+    private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, ParserConfigurationException, IOException {
 
-            SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
+        Element contentElement = (Element) XPathAPI.selectSingleNode(document, "//*[attribute::*[contains(local-name(), '" + REFERENCE_URI_ATTRIBUTE_NAME + "') and starts-with(., 'SIGNED_BY_')]]");
 
-            Element signatureElem = createSignatureElements(referenceUriId, pemEncodedCertificate, signAlgorithmType);
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
-            //вычисление значения DigestValue
-            genericDigestValue(contentElement, signatureElem, signAlgorithmType);
+        Element signatureElem = createSignatureElements(referenceUriId, pemEncodedCertificate, signAlgorithmType);
 
-            signDigestValue(privateKey, signAlgorithmType, signatureElem);
+        //вычисление значения DigestValue
+        genericDigestValue(contentElement, signatureElem, signAlgorithmType);
 
-            return signatureElem;
-        } catch (XMLSecurityException | GeneralSecurityException | RuntimeException ex) {
-            throw new CommonSignFailureException(ex);
-        }
+        signDigestValue(privateKey, signAlgorithmType, signatureElem);
+
+        return signatureElem;
     }
 
     /**
@@ -279,13 +288,13 @@ public final class Smev3RequestSigner {
      * @param privateKey        объект закрытого ключа
      * @param signAlgorithmType алгоритм ЭП
      * @param signatureElem     объект элемента Signature
-     * @throws InvalidCanonicalizerException
-     * @throws CanonicalizationException
+     * @throws XMLSecurityException
      * @throws GeneralSecurityException
+     * @throws TransformerException
      */
-    private static void signDigestValue(PrivateKey privateKey, SignAlgorithmType signAlgorithmType, Element signatureElem) throws InvalidCanonicalizerException, CanonicalizationException, GeneralSecurityException {
+    private static void signDigestValue(PrivateKey privateKey, SignAlgorithmType signAlgorithmType, Element signatureElem) throws XMLSecurityException, GeneralSecurityException, TransformerException {
 
-        Node signedInfoNode = XPathUtil.selectSingleNode(signatureElem, "ds:SignedInfo");
+        Node signedInfoNode = XPathAPI.selectSingleNode(signatureElem, "ds:SignedInfo");
 
         //считаем подпись после всех манипуляций с SignedInfo
         byte[] signatureBytes = CryptoUtil.getSignature(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
@@ -293,7 +302,7 @@ public final class Smev3RequestSigner {
 
         final String base64Signature = new String(Base64Util.getBase64Encoded(signatureBytes));
 
-        XPathUtil.selectSingleNode(signatureElem, "ds:SignatureValue").setTextContent(base64Signature);
+        XPathAPI.selectSingleNode(signatureElem, "ds:SignatureValue").setTextContent(base64Signature);
     }
 
     /**
@@ -303,9 +312,9 @@ public final class Smev3RequestSigner {
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
      * @param signAlgorithmType     тип алгоритма ЭП
      * @return
-     * @throws RuntimeException
+     * @throws ParserConfigurationException
      */
-    private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) {
+    private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) throws ParserConfigurationException {
 
         Document document = DomUtil.newDocument();
 
@@ -360,8 +369,11 @@ public final class Smev3RequestSigner {
      * @param content2sign      объект элемента, значение которого подвергается подписанию
      * @param signatureElem     объект элемента Signature
      * @param signAlgorithmType тип алгоритма ЭП
+     * @throws TransformerException
+     * @throws IOException
+     * @throws TransformationException
      */
-    private static void genericDigestValue(final Element content2sign, final Element signatureElem, SignAlgorithmType signAlgorithmType) {
+    private static void genericDigestValue(final Element content2sign, final Element signatureElem, SignAlgorithmType signAlgorithmType) throws TransformerException, IOException, TransformationException {
 
         /* получение строки трансформированного XML-элемента, в соответствии с требованиями методических рекомендаций СМЭВ */
         byte[] transformedRootElementBytes = DomUtil.getTransformedXml(content2sign);
@@ -370,6 +382,6 @@ public final class Smev3RequestSigner {
 
         final String base64Digest = new String(Base64Util.getBase64Encoded(digestBytes));
 
-        XPathUtil.selectSingleNode(signatureElem, "ds:SignedInfo/ds:Reference/ds:DigestValue").setTextContent(base64Digest);
+        XPathAPI.selectSingleNode(signatureElem, "ds:SignedInfo/ds:Reference/ds:DigestValue").setTextContent(base64Digest);
     }
 }

@@ -75,6 +75,20 @@ public class CryptoFormatConverter {
     }
 
     /**
+     * Convert PKCS#12 to PEM encoded certificate
+     *
+     * @param pfxFileEncoded PKCS#12(PFX) file encoded
+     * @return certificate in PEM format
+     */
+    @SneakyThrows
+    public String getPEMEncodedCertificateFromPKCS12(String pfxFileEncoded, String keystorePass){
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxFileEncoded))) {
+            X509Certificate x509Certificate = CryptoIO.getInstance().readCertificateFromPKCS12(inputStream, keystorePass);
+            return getPEMEncodedCertificate(x509Certificate);
+        }
+    }
+
+    /**
      * Получает закрытый ключ PKCS#8 или сертификат из PEM-формата
      *
      * @param pemEncoded данные в base64 (PEM-формат в base64)

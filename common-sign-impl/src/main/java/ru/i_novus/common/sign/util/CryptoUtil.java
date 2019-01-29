@@ -2,15 +2,13 @@ package ru.i_novus.common.sign.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.xml.security.c14n.CanonicalizationException;
-import org.apache.xml.security.c14n.Canonicalizer;
-import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.cms.*;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.crypto.ExtendedDigest;
@@ -35,11 +33,7 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
-import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
-import ru.i_novus.common.sign.context.DSNamespaceContext;
-
-import javax.xml.soap.SOAPBody;
 import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
@@ -118,6 +112,14 @@ public class CryptoUtil {
         X500Name name = new X500Name(x509Name);
         AsymmetricKeyParameter privateKeyParameter = null;
         AsymmetricKeyParameter publicKeyParameter = null;
+
+        BigInteger serial = BigInteger.ONE; // serial number for self-signed does not matter a lot
+
+        Date notBefore = validFrom == null ? new Date() : validFrom;
+        Date notAfter = validTo == null ? new Date(LocalDateTime.now().plusYears(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo;
+
+        X509v3CertificateBuilder certificateBuilder = null;
+
         if (keyPair.getPublic() instanceof ECPublicKey) {
             ECPublicKey k = (ECPublicKey) keyPair.getPublic();
             ECParameterSpec s = k.getParameters();
@@ -131,24 +133,32 @@ public class CryptoUtil {
             privateKeyParameter = new ECPrivateKeyParameters(
                     kk.getD(),
                     new ECDomainParameters(ss.getCurve(), ss.getG(), ss.getN()));
+
+            certificateBuilder = new JcaX509v3CertificateBuilder(
+                    name, serial,
+                    notBefore,
+                    notAfter,
+                    name, keyPair.getPublic()
+            );
+
         } else if (keyPair.getPublic() instanceof RSAPublicKey) {
+
             RSAPublicKey k = (RSAPublicKey) keyPair.getPublic();
             publicKeyParameter = new RSAKeyParameters(false, k.getModulus(), k.getPublicExponent());
 
             RSAPrivateKey kk = (RSAPrivateKey) keyPair.getPrivate();
             privateKeyParameter = new RSAKeyParameters(true, kk.getModulus(), kk.getPrivateExponent());
+
+            certificateBuilder = new X509v3CertificateBuilder(
+                    name, serial,
+                    notBefore,
+                    notAfter,
+                    name,
+                    SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
         }
 
         if (publicKeyParameter == null)
             return null;
-
-        X509v3CertificateBuilder myCertificateGenerator = new X509v3CertificateBuilder(
-                name,
-                BigInteger.ONE,
-                validFrom == null ? new Date() : validFrom,
-                validTo == null ? new Date(LocalDateTime.now().plusYears(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo,
-                name,
-                SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
 
         DefaultSignatureAlgorithmIdentifierFinder signatureAlgorithmIdentifierFinder = new DefaultSignatureAlgorithmIdentifierFinder();
         DefaultDigestAlgorithmIdentifierFinder digestAlgorithmIdentifierFinder = new DefaultDigestAlgorithmIdentifierFinder();
@@ -171,13 +181,13 @@ public class CryptoUtil {
         val = val | KeyUsage.keyAgreement;
         val = val | KeyUsage.keyEncipherment;
         val = val | KeyUsage.nonRepudiation;
-        myCertificateGenerator.addExtension(Extension.keyUsage, true, new KeyUsage(val));
+        certificateBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(val));
 
-        myCertificateGenerator.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+        certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
 
-        myCertificateGenerator.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
+        certificateBuilder.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
 
-        return myCertificateGenerator.build(signerBuilder.build(privateKeyParameter));
+        return certificateBuilder.build(signerBuilder.build(privateKeyParameter));
     }
 
     /**
@@ -203,6 +213,31 @@ public class CryptoUtil {
         digest.doFinal(resBuf, 0);
 
         return resBuf;
+    }
+
+    /**
+     * Формирует хэш данных для файла
+     *
+     * @param fileBytes входные данные
+     * @return хэш в base64
+     */
+    public static byte[] getFileDigest(byte[] fileBytes, SignAlgorithmType signAlgorithmType) {
+
+        ExtendedDigest extendedDigest = fillDigest(signAlgorithmType);
+
+        final String algorithmName = extendedDigest.getAlgorithmName();
+
+        MessageDigest digest;
+
+        try {
+            digest = MessageDigest.getInstance(algorithmName);
+        } catch (NoSuchAlgorithmException ex) {
+            throw new RuntimeException("Криптопровайдер не поддерживает алгоритм:" + algorithmName, ex);
+        }
+
+        digest.update(fileBytes);
+
+        return digest.digest();
     }
 
     /**
@@ -273,14 +308,6 @@ public class CryptoUtil {
      * @param privateKey        закрытый ключ
      * @param signAlgorithmType параметры алгоритма подписи
      * @return подпись
-     * @throws CommonSignFailureException
-     */
-    /**
-     *
-     * @param data
-     * @param privateKey
-     * @param signAlgorithmType
-     * @return
      * @throws GeneralSecurityException
      */
     public static byte[] getSignature(byte[] data, PrivateKey privateKey, SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
@@ -336,108 +363,9 @@ public class CryptoUtil {
         }
     }
 
-    private static Signature getSignatureInstance(SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
+    public static Signature getSignatureInstance(SignAlgorithmType signAlgorithmType) throws GeneralSecurityException {
         final String algorithmName = signAlgorithmType.getSignatureAlgorithmName();
-         return Signature.getInstance(algorithmName, CRYPTO_PROVIDER_NAME);
+        return Signature.getInstance(algorithmName, CRYPTO_PROVIDER_NAME);
     }
 
-    public static boolean digestVerify(SOAPBody soapBody) {
-        DSNamespaceContext dsNamespaceContext = new DSNamespaceContext();
-        Element signatureElem = (Element) XPathUtil.evaluate("//*[local-name() = 'Signature']", soapBody, dsNamespaceContext);
-        Element contentElem = (Element) XPathUtil.selectSingleNode(soapBody, "//*[attribute::*[contains(local-name(), 'Id' )]]");
-        return digestVerify(contentElem, signatureElem);
-    }
-
-    public static boolean digestVerify(Element contentElem, Element signatureElem) {
-
-        final String digestValue = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestValue/text()", signatureElem, new DSNamespaceContext());
-
-        final String pemEncodedCertificate = XPathUtil.evaluateString("ds:KeyInfo/ds:X509Data/ds:X509Certificate/text()", signatureElem, new DSNamespaceContext());
-
-        X509Certificate x509Certificate = CryptoFormatConverter.getInstance().getCertificateFromPEMEncoded(pemEncodedCertificate);
-
-        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
-
-        final String digestMethodAlgorithm = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestMethod/@Algorithm", signatureElem, new DSNamespaceContext());
-
-        if (!signAlgorithmType.getDigestUri().equals(digestMethodAlgorithm)) {
-            return false;
-        }
-
-        byte[] transformedRootElementBytes = DomUtil.getTransformedXml(contentElem);
-
-        byte[] transformedDocument = getDigest(transformedRootElementBytes, signAlgorithmType);
-
-        final String encodedDigestedDocumentCanonicalized = new String(Base64.getEncoder().encode(transformedDocument));
-
-        return encodedDigestedDocumentCanonicalized.equals(digestValue);
-    }
-
-    public static boolean signVerify(X509Certificate x509Certificate, SOAPBody soapBody) {
-        DSNamespaceContext dsNamespaceContext = new DSNamespaceContext();
-        Element signatureElem = (Element) XPathUtil.evaluate("//*[local-name() = 'Signature']", soapBody, dsNamespaceContext);
-        return signVerify(x509Certificate, signatureElem);
-    }
-
-    public static boolean signVerify(X509Certificate x509Certificate, final Element signatureElement) {
-
-        boolean signedInfoValid;
-
-        SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
-
-        Element signedInfoElement = (Element) XPathUtil.evaluate("//*[local-name() = 'SignedInfo']", signatureElement, new DSNamespaceContext());
-
-        // Canonicalize SignedInfo element
-        Canonicalizer canonicalizer;
-        try {
-            canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
-        } catch (InvalidCanonicalizerException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-
-            byte[] canonicalizedSignedInfo = canonicalizer.canonicalizeSubtree(signedInfoElement);
-
-            String encodedSignatureValue = XPathUtil.evaluateString("ds:SignatureValue/text()", signatureElement, new DSNamespaceContext());
-
-            if (encodedSignatureValue == null) {
-                throw new RuntimeException("retreiving encoded signature value");
-            }
-
-            byte[] decodedSignatureValue = Base64Util.getBase64Decoded(encodedSignatureValue.trim());
-
-            final String signatureMethodAlgorithm = XPathUtil.evaluateString("ds:SignatureMethod/@Algorithm", signedInfoElement, new DSNamespaceContext());
-
-            if (signatureMethodAlgorithm == null) {
-                throw new RuntimeException("retrieving signautre method algorithm");
-            }
-
-            Signature signatureEngine;
-
-            try {
-                signatureEngine = getSignatureInstance(signAlgorithmType);
-            } catch (GeneralSecurityException e) {
-                throw new RuntimeException(e);
-            }
-
-            try {
-                signatureEngine.initVerify(x509Certificate);
-            } catch (InvalidKeyException e) {
-                throw new RuntimeException(e);
-            }
-
-            try {
-                signatureEngine.update(canonicalizedSignedInfo);
-            } catch (SignatureException e) {
-                throw new RuntimeException(e);
-            }
-
-            signedInfoValid = signatureEngine.verify(decodedSignatureValue);
-        } catch (CanonicalizationException | SignatureException e) {
-            throw new RuntimeException(e);
-        }
-
-        return signedInfoValid;
-    }
 }

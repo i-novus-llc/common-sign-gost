@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -39,20 +40,29 @@ public class ConverterTest {
     @SneakyThrows
     private void testKeysInPKCS12(Path path, String password) {
         CryptoIO cryptoIO = CryptoIO.getInstance();
-        PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(path, password);
-        X509Certificate certificate = cryptoIO.readCertificateFromPKCS12(path, password);
 
-        byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
-        Path file = Files.createTempFile("signature", ".sig");
-        try (InputStream fileInputStream = new FileInputStream(file.toFile())) {
-            Files.write(file, signResult);
-            logger.info("file name: {}", file.toString());
+        try (InputStream fileInputStream = Files.newInputStream(path)) {
 
-            Verifier verifier = Verifier.getInstance();
-            boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(fileInputStream));
-            assertTrue(valid);
-        } finally {
-            Files.delete(file);
+            KeyStore keyStore = cryptoIO.getPkcs12KeyStore(fileInputStream, password);
+
+            PrivateKey privateKey = cryptoIO.readPrivateKeyFromPKCS12(keyStore, password);
+            X509Certificate certificate = cryptoIO.readCertificateFromPKCS12(keyStore);
+
+            byte[] signResult = CryptoUtil.getCMSSignature(getTestData(), privateKey, certificate);
+
+            Path file = Files.createTempFile("signature", ".sig");
+
+            try (InputStream inputStream = new FileInputStream(file.toFile())) {
+
+                Files.write(file, signResult);
+                logger.info("file name: {}", file.toString());
+
+                Verifier verifier = Verifier.getInstance();
+                boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(inputStream));
+                assertTrue(valid);
+            } finally {
+                Files.delete(file);
+            }
         }
     }
 

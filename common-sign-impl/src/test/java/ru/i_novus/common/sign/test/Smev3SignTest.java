@@ -2,6 +2,7 @@ package ru.i_novus.common.sign.test;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xpath.XPathAPI;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +12,7 @@ import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.smev.Smev3RequestSigner;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
-import ru.i_novus.common.sign.util.XPathUtil;
+import ru.i_novus.common.sign.util.SoapVerifier;
 
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPConstants;
@@ -127,20 +128,20 @@ public class Smev3SignTest {
 
         SOAPBody soapBody = message.getSOAPBody();
 
-        checkSignedMessage(soapBody, x509Certificate);
+        checkSignedMessage(soapBody, x509Certificate, Smev3RequestSigner.REFERENCE_URI_ATTRIBUTE_NAME);
 
-        Node callerInformationSystemSignatureNode = XPathUtil.selectSingleNode(soapBody, "//*[local-name() = '" + Smev3RequestSigner.NODE_CALLER_INFORMATION_SYSTEM_SIGNATURE + "']");
+        Node callerInformationSystemSignatureNode = XPathAPI.selectSingleNode(soapBody, "//*[local-name() = '" + Smev3RequestSigner.CALLER_INFORM_SYSTEM_SIGNATURE_ELEMENT_NAME + "']");
         callerInformationSystemSignatureNode.getParentNode().removeChild(callerInformationSystemSignatureNode);
     }
 
     @SneakyThrows
-    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate) {
+    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate, final String referenceUriAttributeName) {
 
         assertNotNull(soapBody);
 
-        assertTrue(CryptoUtil.digestVerify(soapBody));
+        assertTrue(SoapVerifier.verifyDigest(soapBody, referenceUriAttributeName));
 
-        assertTrue(CryptoUtil.signVerify(x509Certificate, soapBody));
+        assertTrue(SoapVerifier.verifySignature(x509Certificate, soapBody));
     }
 
     private SOAPMessage getAckRequest() {

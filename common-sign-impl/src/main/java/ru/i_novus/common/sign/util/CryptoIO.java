@@ -113,13 +113,35 @@ public class CryptoIO {
     }
 
     @SneakyThrows
+    public KeyStore getPkcs12KeyStore(InputStream inputStream, String keystorePass) {
+        KeyStore keyStore = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
+        keyStore.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
+        return keyStore;
+    }
+
+    @SneakyThrows
+    public PrivateKey readPrivateKeyFromPKCS12(KeyStore keyStore, String keystorePass) {
+        final String alias = keyStore.aliases().nextElement();
+        return (PrivateKey) keyStore.getKey(alias, keystorePass == null ? null : keystorePass.toCharArray());
+    }
+
+    @SneakyThrows
+    public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
+        KeyStore keyStore = getPkcs12KeyStore(inputStream, keystorePass);
+        return readCertificateFromPKCS12(keyStore);
+    }
+
+    @SneakyThrows
+    public X509Certificate readCertificateFromPKCS12(KeyStore keyStore) {
+        String alias = keyStore.aliases().nextElement();
+        Certificate[] chain = keyStore.getCertificateChain(alias);
+        return (X509Certificate) chain[chain.length - 1];
+    }
+
+    @SneakyThrows
     public PrivateKey readPrivateKeyFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore ks = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
-        ks.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
-
-        String alias = ks.aliases().nextElement();
-
-        return (PrivateKey) ks.getKey(alias, keystorePass == null ? null : keystorePass.toCharArray());
+        KeyStore keyStore = getPkcs12KeyStore(inputStream, keystorePass);
+        return readPrivateKeyFromPKCS12(keyStore, keystorePass);
     }
 
     @SneakyThrows
@@ -128,17 +150,24 @@ public class CryptoIO {
     }
 
     @SneakyThrows
-    public X509Certificate readCertificateFromPKCS12(InputStream inputStream, String keystorePass) {
-        KeyStore ks = KeyStore.getInstance("pkcs12", BouncyCastleProvider.PROVIDER_NAME);
-        ks.load(inputStream, keystorePass == null ? null : keystorePass.toCharArray());
+    public void createPkcs12File(Path filePath, String password, PrivateKey privateKey, X509Certificate[] chain) {
 
-        String alias = ks.aliases().nextElement();
-        Certificate[] chain = ks.getCertificateChain(alias);
-        return (X509Certificate) chain[chain.length - 1];
+        PKCS12PfxPdu pfx = createPkcs12PfxPdu(password, privateKey, chain);
+
+        try (OutputStream stream = Files.newOutputStream(filePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
+             stream.write(pfx.getEncoded());
+        }
     }
 
     @SneakyThrows
-    public void createPkcs12File(Path filePath, String password, PrivateKey privateKey, X509Certificate[] chain) {
+    public String createPkcs12FileEncoded(String password, PrivateKey privateKey, X509Certificate[] chain) {
+        PKCS12PfxPdu pfx = createPkcs12PfxPdu(password, privateKey, chain);
+        return Base64Util.getBase64EncodedString(pfx.getEncoded());
+    }
+
+    @SneakyThrows
+    public PKCS12PfxPdu createPkcs12PfxPdu(String password, PrivateKey privateKey, X509Certificate[] chain) {
+
         if (chain.length == 0) {
             throw new IllegalArgumentException("Cannot build PKCS12 without certificates");
         }
@@ -154,26 +183,10 @@ public class CryptoIO {
             }
             safeBags[i] = certBagBuilder.build();
         }
-/*
-        PKCS12SafeBagBuilder taCertBagBuilder = new JcaPKCS12SafeBagBuilder(chain[2]);
-
-        taCertBagBuilder.addBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString("Bouncy Primary Certificate"));
-
-        PKCS12SafeBagBuilder caCertBagBuilder = new JcaPKCS12SafeBagBuilder(chain[1]);
-
-        caCertBagBuilder.addBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString("Bouncy Intermediate Certificate"));
-
-        PKCS12SafeBagBuilder eeCertBagBuilder = new JcaPKCS12SafeBagBuilder(chain[0]);
-
-        eeCertBagBuilder.addBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_friendlyName, new DERBMPString("Eric's Key"));
-        eeCertBagBuilder.addBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, extUtils.createSubjectKeyIdentifier(publicKey));
-*/
 
         PKCS12SafeBagBuilder keyBagBuilder = new JcaPKCS12SafeBagBuilder(privateKey,
                 new BcPKCS12PBEOutputEncryptorBuilder(PKCSObjectIdentifiers.pbeWithSHAAnd3_KeyTripleDES_CBC,
                         new CBCBlockCipher(new DESedeEngine())).build(password.toCharArray()));
-
-//        keyBagBuilder.addBagAttribute(PKCSObjectIdentбifiers.pkcs_9_at_friendlyName, new DERBMPString("Eric's Key"));
         keyBagBuilder.addBagAttribute(PKCSObjectIdentifiers.pkcs_9_at_localKeyId, extUtils.createSubjectKeyIdentifier(publicKey));
 
         PKCS12PfxPduBuilder pfxPduBuilder = new PKCS12PfxPduBuilder();
@@ -184,10 +197,7 @@ public class CryptoIO {
 
         pfxPduBuilder.addData(keyBagBuilder.build());
 
-        PKCS12PfxPdu pfx = pfxPduBuilder.build(new BcPKCS12MacCalculatorBuilder(), password.toCharArray());
-        try (OutputStream stream = Files.newOutputStream(filePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE)) {
-             stream.write(pfx.getEncoded());
-        }
+        return pfxPduBuilder.build(new BcPKCS12MacCalculatorBuilder(), password.toCharArray());
     }
 
     /**
