@@ -347,7 +347,7 @@ public final class Smev3RequestSigner {
 
         final String digestAlgorithm = SignAlgorithmType.ECGOST3410.equals(signAlgorithmType) ? signAlgorithmType.getDigestUri() : signAlgorithmType.getDigestUrn();
 
-        digestMethodElem.setAttribute("Algorithm", signAlgorithmType.getDigestUri());
+        digestMethodElem.setAttribute("Algorithm", digestAlgorithm);
 
         referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestValue"));
 
