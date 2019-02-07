@@ -8,7 +8,6 @@ import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.context.DSNamespaceContext;
-import ru.i_novus.common.sign.smev.Smev3RequestSigner;
 
 import javax.xml.soap.SOAPBody;
 import javax.xml.transform.TransformerException;
@@ -26,14 +25,14 @@ public class SoapVerifier {
         // не позволяет создать экземпляр класса, класс утилитный
     }
 
-    public static boolean verifyDigest(SOAPBody soapBody, final String referenceUriAttributeName) throws TransformerException, XPathExpressionException, IOException, TransformationException {
+    public static boolean verifyDigest(SOAPBody soapBody, final String referenceUriAttributeName, final String digestMethodAlgorithmURI) throws TransformerException, XPathExpressionException, IOException, TransformationException {
         DSNamespaceContext dsNamespaceContext = new DSNamespaceContext();
         Element signatureElem = (Element) XPathUtil.evaluate("//*[local-name() = 'Signature']", soapBody, dsNamespaceContext);
         Element contentElem = (Element) XPathAPI.selectSingleNode(soapBody, "//*[attribute::*[contains(local-name(), '" + referenceUriAttributeName + "' )]]");
-        return verifyDigest(contentElem, signatureElem);
+        return verifyDigest(contentElem, signatureElem, digestMethodAlgorithmURI);
     }
 
-    public static boolean verifyDigest(Element contentElem, Element signatureElem) throws XPathExpressionException, TransformationException, TransformerException, IOException {
+    public static boolean verifyDigest(Element contentElem, Element signatureElem, final String digestMethodAlgorithmURI) throws XPathExpressionException, TransformationException, TransformerException, IOException {
 
         final String digestValue = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestValue/text()", signatureElem, new DSNamespaceContext());
 
@@ -45,7 +44,7 @@ public class SoapVerifier {
 
         final String digestMethodAlgorithm = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestMethod/@Algorithm", signatureElem, new DSNamespaceContext());
 
-        if (!Smev3RequestSigner.getDigestMethodAlgorithm(signAlgorithmType).equals(digestMethodAlgorithm)) {
+        if (!digestMethodAlgorithmURI.equals(digestMethodAlgorithm)) {
             return false;
         }
 
@@ -58,13 +57,13 @@ public class SoapVerifier {
         return encodedDigestedDocumentCanonicalized.equals(digestValue);
     }
 
-    public static boolean verifySignature(X509Certificate x509Certificate, SOAPBody soapBody) throws XMLSecurityException, GeneralSecurityException, XPathExpressionException {
+    public static boolean verifySignature(X509Certificate x509Certificate, SOAPBody soapBody, final String signatureMethodAlgorithmURI) throws XMLSecurityException, GeneralSecurityException, XPathExpressionException {
         DSNamespaceContext dsNamespaceContext = new DSNamespaceContext();
         Element signatureElem = (Element) XPathUtil.evaluate("//*[local-name() = 'Signature']", soapBody, dsNamespaceContext);
-        return verifySignature(x509Certificate, signatureElem);
+        return verifySignature(x509Certificate, signatureElem, signatureMethodAlgorithmURI);
     }
 
-    public static boolean verifySignature(X509Certificate x509Certificate, final Element signatureElement) throws XMLSecurityException, GeneralSecurityException, XPathExpressionException {
+    public static boolean verifySignature(X509Certificate x509Certificate, final Element signatureElement, final String signatureMethodAlgorithmURI) throws XMLSecurityException, GeneralSecurityException, XPathExpressionException {
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
@@ -88,7 +87,7 @@ public class SoapVerifier {
             throw new RuntimeException("retrieving signautre method algorithm");
         }
 
-        if (!Smev3RequestSigner.getSignatureMethodAlgorithm(signAlgorithmType).equals(signatureMethodAlgorithm)) {
+        if (!signatureMethodAlgorithmURI.equals(signatureMethodAlgorithm)) {
             return false;
         }
 
