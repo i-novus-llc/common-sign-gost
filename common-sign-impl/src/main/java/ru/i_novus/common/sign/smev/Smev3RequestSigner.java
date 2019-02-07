@@ -312,6 +312,7 @@ public final class Smev3RequestSigner {
      * @param signAlgorithmType     тип алгоритма ЭП
      * @return
      * @throws ParserConfigurationException
+     * @throws IllegalArgumentException
      */
     private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) throws ParserConfigurationException {
 
@@ -331,7 +332,7 @@ public final class Smev3RequestSigner {
 
         Element signatureMethodElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:SignatureMethod"));
 
-        signatureMethodElem.setAttribute("Algorithm", signAlgorithmType.getSignUri());
+        signatureMethodElem.setAttribute("Algorithm", getSignatureMethodAlgorithm(signAlgorithmType));
 
         Element referenceElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:Reference"));
 
@@ -345,9 +346,7 @@ public final class Smev3RequestSigner {
 
         Element digestMethodElem = (Element) referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestMethod"));
 
-        final String digestAlgorithm = SignAlgorithmType.ECGOST3410.equals(signAlgorithmType) ? signAlgorithmType.getDigestUri() : signAlgorithmType.getDigestUrn();
-
-        digestMethodElem.setAttribute("Algorithm", digestAlgorithm);
+        digestMethodElem.setAttribute("Algorithm", getDigestMethodAlgorithm(signAlgorithmType));
 
         referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestValue"));
 
@@ -362,6 +361,60 @@ public final class Smev3RequestSigner {
         x509CertificateElem.setTextContent(pemEncodedCertificate);
 
         return document.getDocumentElement();
+    }
+
+    /**
+     * Получает URI алгоритма формирования подписи
+     *
+     * @param signAlgorithmType тип алгоритма подписи
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static String getSignatureMethodAlgorithm(SignAlgorithmType signAlgorithmType) {
+
+        String result;
+
+        switch (signAlgorithmType) {
+            case ECGOST3410:
+                result = signAlgorithmType.getSignUri();
+                break;
+            case ECGOST3410_2012_256:
+            case ECGOST3410_2012_512:
+                //toDo при переводе СМЭВ ключей на на ГОСТ Р 34.10-2012 длинной 512 бит, проверить на соответствие требованиям Методических рекомендаций по работе с ЕСМЭВ (см. п6.3. Правила формирования ЭП)
+                result = signAlgorithmType.getSignUrn();
+                break;
+            default:
+                throw new IllegalArgumentException("Signature algorithm type " + signAlgorithmType + " is not supported.");
+        }
+
+        return result;
+    }
+
+    /**
+     * Получает URI алгоритма расчета хеш-суммы
+     *
+     * @param signAlgorithmType тип алгоритма подписи
+     * @return
+     * @throws IllegalArgumentException
+     */
+    public static String getDigestMethodAlgorithm(SignAlgorithmType signAlgorithmType) {
+
+        String result;
+
+        switch (signAlgorithmType) {
+            case ECGOST3410:
+                result = signAlgorithmType.getDigestUri();
+                break;
+            case ECGOST3410_2012_256:
+            case ECGOST3410_2012_512:
+                //toDo при переводе СМЭВ ключей на на ГОСТ Р 34.11-2012 длинной 512 бит, проверить на соответствие требованиям Методических рекомендаций по работе с ЕСМЭВ (см. п6.3. Правила формирования ЭП)
+                result = signAlgorithmType.getDigestUrn();
+                break;
+            default:
+                throw new IllegalArgumentException("Signature algorithm type " + signAlgorithmType + " is not supported.");
+        }
+
+        return result;
     }
 
     /**

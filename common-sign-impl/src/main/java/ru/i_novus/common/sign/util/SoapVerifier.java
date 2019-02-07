@@ -8,6 +8,7 @@ import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.context.DSNamespaceContext;
+import ru.i_novus.common.sign.smev.Smev3RequestSigner;
 
 import javax.xml.soap.SOAPBody;
 import javax.xml.transform.TransformerException;
@@ -44,7 +45,7 @@ public class SoapVerifier {
 
         final String digestMethodAlgorithm = XPathUtil.evaluateString("ds:SignedInfo/ds:Reference/ds:DigestMethod/@Algorithm", signatureElem, new DSNamespaceContext());
 
-        if (!signAlgorithmType.getDigestUri().equals(digestMethodAlgorithm)) {
+        if (!Smev3RequestSigner.getDigestMethodAlgorithm(signAlgorithmType).equals(digestMethodAlgorithm)) {
             return false;
         }
 
@@ -85,6 +86,10 @@ public class SoapVerifier {
 
         if (signatureMethodAlgorithm == null) {
             throw new RuntimeException("retrieving signautre method algorithm");
+        }
+
+        if (!Smev3RequestSigner.getSignatureMethodAlgorithm(signAlgorithmType).equals(signatureMethodAlgorithm)) {
+            return false;
         }
 
         Signature signatureEngine = CryptoUtil.getSignatureInstance(signAlgorithmType);
