@@ -113,12 +113,12 @@ public class Smev3SignTest {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(CryptoTest.TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
-            signAndSimpleCheckMessage(message, keyPair.getPrivate(), CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder), action);
+            signAndSimpleCheckMessage(message, keyPair.getPrivate(), CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder), action, algorithm);
         }
     }
 
     @SneakyThrows
-    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate x509Certificate, String action) {
+    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate x509Certificate, String action, SignAlgorithmType signAlgorithmType) {
 
         assertNotNull(message);
 
@@ -128,20 +128,20 @@ public class Smev3SignTest {
 
         SOAPBody soapBody = message.getSOAPBody();
 
-        checkSignedMessage(soapBody, x509Certificate, Smev3RequestSigner.REFERENCE_URI_ATTRIBUTE_NAME);
+        checkSignedMessage(soapBody, x509Certificate, Smev3RequestSigner.REFERENCE_URI_ATTRIBUTE_NAME, signAlgorithmType);
 
         Node callerInformationSystemSignatureNode = XPathAPI.selectSingleNode(soapBody, "//*[local-name() = '" + Smev3RequestSigner.CALLER_INFORM_SYSTEM_SIGNATURE_ELEMENT_NAME + "']");
         callerInformationSystemSignatureNode.getParentNode().removeChild(callerInformationSystemSignatureNode);
     }
 
     @SneakyThrows
-    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate, final String referenceUriAttributeName) {
+    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate, final String referenceUriAttributeName, SignAlgorithmType signAlgorithmType) {
 
         assertNotNull(soapBody);
 
-        assertTrue(SoapVerifier.verifyDigest(soapBody, referenceUriAttributeName));
+        assertTrue(SoapVerifier.verifyDigest(soapBody, referenceUriAttributeName, Smev3RequestSigner.getDigestMethodAlgorithm(signAlgorithmType)));
 
-        assertTrue(SoapVerifier.verifySignature(x509Certificate, soapBody));
+        assertTrue(SoapVerifier.verifySignature(x509Certificate, soapBody, Smev3RequestSigner.getSignatureMethodAlgorithm(signAlgorithmType)));
     }
 
     private SOAPMessage getAckRequest() {
