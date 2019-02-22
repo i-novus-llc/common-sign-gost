@@ -4,7 +4,7 @@
 
     <groupId>ru.i_novus.common</groupId>
     <artifactId>common-sign-parent</artifactId>
-    <version>1.6-SNAPSHOT</version>
+    <version>1.6</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -31,7 +31,7 @@
         <connection>scm:git:https://git.i-novus.ru/util/common-sign.git</connection>
         <url>https://git.i-novus.ru/util/common-sign</url>
         <developerConnection>scm:git:https://git.i-novus.ru/util/common-sign.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>common-sign-parent-1.6</tag>
     </scm>
 
     <modules>
