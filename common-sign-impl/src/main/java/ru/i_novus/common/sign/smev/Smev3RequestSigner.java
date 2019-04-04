@@ -267,7 +267,7 @@ public final class Smev3RequestSigner {
      */
     private static Element sign(Document document, final String referenceUriId, PrivateKey privateKey, X509Certificate x509Certificate, final String pemEncodedCertificate) throws XMLSecurityException, GeneralSecurityException, TransformerException, ParserConfigurationException, IOException {
 
-        Element contentElement = (Element) XPathAPI.selectSingleNode(document, "//*[attribute::*[contains(local-name(), '" + REFERENCE_URI_ATTRIBUTE_NAME + "') and starts-with(., 'SIGNED_BY_')]]");
+        Element contentElement = (Element) XPathAPI.selectSingleNode(document, "//*[attribute::*[contains(local-name(), '" + REFERENCE_URI_ATTRIBUTE_NAME + "')]]");
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
