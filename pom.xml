@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ru.i_novus.common</groupId>
-    <artifactId>common-sign-parent</artifactId>
+    <groupId>ru.i-novus.components</groupId>
+    <artifactId>common-sign-gost-parent</artifactId>
     <version>1.8-SNAPSHOT</version>
     <packaging>pom</packaging>
 
@@ -20,19 +20,20 @@
         <junit.version>4.12</junit.version>
         <common.lang3.version>3.4</common.lang3.version>
         <maven.shade.plugin.version>3.1.0</maven.shade.plugin.version>
-
-        <internal.repository.releases>http://maven.i-novus.ru/libs-release-local</internal.repository.releases>
-        <internal.repository.shapshots>http://maven.i-novus.ru/libs-snapshot-local</internal.repository.shapshots>
-        <internal.repository.releases.id>i-novus-central</internal.repository.releases.id>
-        <internal.repository.snapshots.id>i-novus-snapshots</internal.repository.snapshots.id>
     </properties>
 
     <scm>
-        <connection>scm:git:https://git.i-novus.ru/util/common-sign.git</connection>
-        <url>https://git.i-novus.ru/util/common-sign</url>
-        <developerConnection>scm:git:https://git.i-novus.ru/util/common-sign.git</developerConnection>
+        <connection>scm:git:https://git.i-novus.ru/i-novus-llc/common-sign-gost.git</connection>
+        <url>https://git.i-novus.ru/i-novus-llc/common-sign-gost</url>
+        <developerConnection>scm:git:https://git.i-novus.ru/i-novus-llc/common-sign-gost.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
+    <inceptionYear>2018</inceptionYear>
+    <organization>
+        <name>I-Novus LLC</name>
+        <url>https://i-novus.ru/en</url>
+    </organization>
 
     <modules>
         <module>common-sign-api</module>
@@ -105,16 +106,53 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>${internal.repository.releases.id}</id>
-            <name>${internal.repository.releases.id}</name>
-            <url>${internal.repository.releases}</url>
-        </repository>
         <snapshotRepository>
-            <id>${internal.repository.snapshots.id}</id>
-            <name>${internal.repository.snapshots.id}</name>
-            <url>${internal.repository.shapshots}</url>
-            <uniqueVersion>true</uniqueVersion>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
     </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <activation>
+                <property>
+                    <name>release</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
