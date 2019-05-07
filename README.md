@@ -10,6 +10,6 @@ Mizdrav IPS (https://portal.egisz.rosminzdrav.ru/materials/11).
 Based on Bouncy Castle libraries.  
 
 [![Build Status](https://travis-ci.com/i-novus-llc/common-sign-gost.svg)](https://travis-ci.com/i-novus-llc/common-sign-gost)
-
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ----
 Copyright (C) 2018-2019 I-Novus, LLC
