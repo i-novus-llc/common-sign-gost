@@ -14,6 +14,7 @@
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.javadoc.version>3.1.0</maven.javadoc.version>
         <maven.source.version>3.0.1</maven.source.version>
+        <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bouncycastle.version>1.61</bouncycastle.version>
         <xalan.version>2.7.2</xalan.version>

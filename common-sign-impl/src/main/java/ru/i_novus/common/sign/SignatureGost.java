@@ -47,31 +47,19 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected abstract String engineGetURI();
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected String engineGetJCEAlgorithmString() {
         return signatureAlgorithm.getAlgorithm();
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected String engineGetJCEProviderName() {
         return signatureAlgorithm.getProvider().getName();
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineUpdate(byte[] input) throws XMLSignatureException {
         try {
@@ -81,9 +69,6 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineUpdate(byte input) throws XMLSignatureException {
         try {
@@ -93,9 +78,6 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineUpdate(byte[] buf, int offset, int len) throws XMLSignatureException {
         try {
@@ -105,17 +87,11 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineInitSign(Key signingKey) throws XMLSignatureException {
         engineInitSign(signingKey, (SecureRandom) null);
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineInitSign(Key signingKey, SecureRandom secureRandom) throws XMLSignatureException {
         if (!(signingKey instanceof PrivateKey)) {
@@ -138,18 +114,12 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineInitSign(Key signingKey,
                                   AlgorithmParameterSpec algorithmParameterSpec) throws XMLSignatureException {
         throw new XMLSignatureException("algorithms.CannotUseAlgorithmParameterSpecOnDSA");
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected byte[] engineSign() throws XMLSignatureException {
         try {
@@ -159,9 +129,6 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineInitVerify(Key verificationKey) throws XMLSignatureException {
         if (!(verificationKey instanceof PublicKey)) {
@@ -178,21 +145,15 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         } catch (InvalidKeyException e) {
             // reinstantiate Signature object to work around bug in JDK
             // see: http://bugs.sun.com/view_bug.do?bug_id=4953555
-            Signature sig = signatureAlgorithm;
             try {
                 signatureAlgorithm = Signature.getInstance(signatureAlgorithm.getAlgorithm());
             } catch (Exception ex) {
-                // this shouldn't occur, but if it does, restore previous
-                // Signature
-                signatureAlgorithm = sig;
+                // this shouldn't occur, but if it does, restore previous Signature
             }
             throw new XMLSignatureException(e.toString());
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected boolean engineVerify(byte[] signature) throws XMLSignatureException {
         try {
@@ -202,9 +163,6 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineSetParameter(AlgorithmParameterSpec params) throws XMLSignatureException {
         try {
@@ -214,9 +172,6 @@ public abstract class SignatureGost extends SignatureAlgorithmSpi {
         }
     }
 
-    /**
-     * @inheritDoc
-     */
     @Override
     protected void engineSetHMACOutputLength(int hmacOutputLength) throws XMLSignatureException {
         throw new XMLSignatureException("algorithms.HMACOutputLengthOnlyForHMAC");
