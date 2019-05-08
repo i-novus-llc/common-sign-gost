@@ -31,8 +31,7 @@ import javax.xml.namespace.NamespaceContext;
  */
 public class DSNamespaceContext implements NamespaceContext {
 
-    private Map<String, String> namespaceMap =
-            new HashMap<String, String>();
+    private Map<String, String> namespaceMap = new HashMap<>();
 
     public DSNamespaceContext() {
         namespaceMap.put("ds", "http://www.w3.org/2000/09/xmldsig#");

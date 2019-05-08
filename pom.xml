@@ -53,6 +53,10 @@
     <modules>
         <module>common-sign-api</module>
         <module>common-sign-impl</module>
+        <module>common-sign-soap</module>
+        <module>common-sign-ips</module>
+        <module>common-sign-smev2</module>
+        <module>common-sign-smev3</module>
     </modules>
 
     <dependencyManagement>

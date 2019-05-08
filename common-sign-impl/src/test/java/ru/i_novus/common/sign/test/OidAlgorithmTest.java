@@ -1,5 +1,3 @@
-package ru.i_novus.common.sign.test;
-
 /*-
  * -----------------------------------------------------------------
  * common-sign-gost
@@ -9,9 +7,9 @@ package ru.i_novus.common.sign.test;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +17,7 @@ package ru.i_novus.common.sign.test;
  * limitations under the License.
  * -----------------------------------------------------------------
  */
+package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -64,13 +63,12 @@ public class OidAlgorithmTest {
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
         org.bouncycastle.asn1.x500.X500Name subject = new org.bouncycastle.asn1.x500.X500Name("CN=i-novus");
-        org.bouncycastle.asn1.x500.X500Name issuer = subject;
         BigInteger serial = BigInteger.ONE;
         Date notBefore = new Date();
         Date notAfter = new Date(notBefore.getTime() + TimeUnit.DAYS.toMillis(365));
 
         org.bouncycastle.cert.X509v3CertificateBuilder certificateBuilder = new org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder(
-                issuer, serial,
+                subject, serial,
                 notBefore, notAfter,
                 subject, keyPair.getPublic()
         );

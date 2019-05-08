@@ -1,5 +1,3 @@
-package ru.i_novus.common.sign.test;
-
 /*-
  * -----------------------------------------------------------------
  * common-sign-gost
@@ -9,9 +7,9 @@ package ru.i_novus.common.sign.test;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +17,7 @@ package ru.i_novus.common.sign.test;
  * limitations under the License.
  * -----------------------------------------------------------------
  */
+package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -40,7 +39,7 @@ import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
 @Slf4j
 public class CryptoTest {
-    public static final String TEST_CERTIFICATE_CN = "CN=Сотрудник ООО \"Ай-Новус\", O=Общество с ограниченной ответственностью \"Ай-Новус\", E=office@i-novus.ru, L=Казань, C=RU, STREET=ул. Сеченова 19Б";
+    private static final String TEST_CERTIFICATE_CN = "CN=I-Novus Employee, O=I-Novus LLC, E=office@i-novus.ru, L=Kazan, C=RU, STREET=Sechenova 19B";
     private static final byte[] TEST_DATA_TO_SIGN = getTestData();
 
     @BeforeClass
@@ -85,7 +84,7 @@ public class CryptoTest {
 
             SignAlgorithmType algorithmType = SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());
             if (TEST_DATA_TO_SIGN != null) {
-                String signature = CryptoUtil.getBase64Signature(new String(TEST_DATA_TO_SIGN), getBase64EncodedString(keySpec.getEncoded()),
+                CryptoUtil.getBase64Signature(new String(TEST_DATA_TO_SIGN), getBase64EncodedString(keySpec.getEncoded()),
                         algorithmType);
             }
 
@@ -106,7 +105,7 @@ public class CryptoTest {
     }
 
     private static byte[] getTestData() {
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/smev/getRequestRequest.xml");
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/xml/sample.xml");
         return CryptoIO.getInstance().inputStreamToByteArray(inputStream);
     }
 }

@@ -1,5 +1,3 @@
-package ru.i_novus.common.sign;
-
 /*-
  * -----------------------------------------------------------------
  * common-sign-gost
@@ -9,9 +7,9 @@ package ru.i_novus.common.sign;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,15 +17,14 @@ package ru.i_novus.common.sign;
  * limitations under the License.
  * -----------------------------------------------------------------
  */
+package ru.i_novus.common.sign;
 
 import lombok.SneakyThrows;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.algorithms.SignatureAlgorithm;
-import org.apache.xml.security.transforms.Transform;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.i_novus.common.sign.api.GostIds;
-import ru.i_novus.common.sign.smev.SmevTransformSpi;
 
 import java.security.Security;
 
@@ -82,8 +79,6 @@ public final class Init {
         // GOST-3410-2012-512
         SignatureAlgorithm.register(GostIds.GOST3410_2012_512_URI, SignatureGost.Gost3410_2012_512_Uri.class);
         SignatureAlgorithm.register(GostIds.GOST3410_2012_512_URN, SignatureGost.Gost3410_2012_512_Urn.class);
-
-        Transform.register(SmevTransformSpi.ALGORITHM_URN, SmevTransformSpi.class);
         initialized = true;
     }
 }
