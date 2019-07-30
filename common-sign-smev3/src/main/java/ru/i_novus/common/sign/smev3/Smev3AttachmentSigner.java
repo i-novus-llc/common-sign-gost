@@ -44,7 +44,7 @@ public final class Smev3AttachmentSigner {
      * @param content               данные вложения
      * @param pemEncodedPrivateKey  закрытый ключ в формате PEM
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
-     * @return
+     * @return подписанные данные файлового вложения
      * @throws IOException
      * @throws CMSException
      * @throws GeneralSecurityException
@@ -69,7 +69,7 @@ public final class Smev3AttachmentSigner {
      * @param content          данные вложения
      * @param x509Certificate  сертификат ЭП в формате {@link X509Certificate}
      * @param privateKey       закрытый ключ в формате {@link PrivateKey}
-     * @return
+     * @return подписанные данные файлового вложения
      * @throws IOException
      * @throws CMSException
      * @throws GeneralSecurityException
@@ -88,7 +88,7 @@ public final class Smev3AttachmentSigner {
      * @param content          данные вложения
      * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
      * @param keystorePassword пароль к закрытому ключу
-     * @return
+     * @return подписанные данные файлового вложения
      * @throws IOException
      * @throws CMSException
      * @throws GeneralSecurityException
@@ -117,7 +117,7 @@ public final class Smev3AttachmentSigner {
      * @param x509Certificate   сертификат ЭП в формате {@link X509Certificate}
      * @param privateKey        закрытый ключ в формате {@link PrivateKey}
      * @param signAlgorithmType тип алгоритма ЭП
-     * @return
+     * @return подписанные данные файлового вложения
      * @throws IOException
      * @throws CMSException
      * @throws GeneralSecurityException

@@ -9,9 +9,9 @@ package ru.i_novus.common.sign.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,13 +22,16 @@ package ru.i_novus.common.sign.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.crypto.engines.DESedeEngine;
 import org.bouncycastle.crypto.engines.RC2Engine;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS12PfxPdu;
 import org.bouncycastle.pkcs.PKCS12PfxPduBuilder;
 import org.bouncycastle.pkcs.PKCS12SafeBag;
@@ -36,19 +39,15 @@ import org.bouncycastle.pkcs.PKCS12SafeBagBuilder;
 import org.bouncycastle.pkcs.bc.BcPKCS12MacCalculatorBuilder;
 import org.bouncycastle.pkcs.bc.BcPKCS12PBEOutputEncryptorBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
+import org.bouncycastle.util.io.pem.PemReader;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -66,9 +65,24 @@ public class CryptoIO {
     }
 
     @SneakyThrows
-    public PKCS8EncodedKeySpec readPkFromDER(final String keyPath) {
+    public PKCS8EncodedKeySpec readPkFromPKCS8(final String keyPath) {
         byte[] data = Files.readAllBytes(Paths.get(keyPath));
         return new PKCS8EncodedKeySpec(data);
+    }
+
+    public PrivateKey readPrivateKey(InputStream input) throws IOException, GeneralSecurityException {
+//        byte[] bytes = inputStreamToByteArray(input);
+        PEMParser pemReader = new PEMParser(new InputStreamReader(input));
+
+        /*
+         * Now it's in a PKCS#8 PrivateKeyInfo structure. Read its Algorithm
+         * OID and use that to construct a KeyFactory.
+         */
+        PrivateKeyInfo pki = (PrivateKeyInfo)pemReader.readObject();
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(pki.getEncoded());
+
+        String algOid = pki.getPrivateKeyAlgorithm().getAlgorithm().getId();
+        return KeyFactory.getInstance(algOid).generatePrivate(spec);
     }
 
     @SneakyThrows
@@ -108,7 +122,7 @@ public class CryptoIO {
     }
 
     @SneakyThrows
-    public String writePKToDERFile(final KeyPair keyPair, final Path path) {
+    public String writePKToPKCS8File(final KeyPair keyPair, final Path path) {
         if (path.toFile().exists()) {
             Files.delete(path);
         }

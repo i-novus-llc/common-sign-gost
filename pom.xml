@@ -16,9 +16,9 @@
         <maven.source.version>3.0.1</maven.source.version>
         <maven.javadoc.failOnError>false</maven.javadoc.failOnError>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <bouncycastle.version>1.61</bouncycastle.version>
+        <bouncycastle.version>1.62</bouncycastle.version>
         <xalan.version>2.7.2</xalan.version>
-        <xmlsec.version>2.0.8</xmlsec.version>
+        <xmlsec.version>2.1.4</xmlsec.version>
         <lombok.version>1.18.8</lombok.version>
         <junit.version>4.12</junit.version>
         <common.lang3.version>3.4</common.lang3.version>

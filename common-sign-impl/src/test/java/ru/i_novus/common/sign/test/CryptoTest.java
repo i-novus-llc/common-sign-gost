@@ -72,14 +72,14 @@ public class CryptoTest {
             throw new IllegalArgumentException("Signature algorithm '" + signAlgorithm.name() + "' is not supported");
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
-        keyPath = cryptoIO.writePKToDERFile(keyPair, Paths.get(basePath, keyPath));
+        keyPath = cryptoIO.writePKToPKCS8File(keyPair, Paths.get(basePath, keyPath));
         logger.info("Path to key: {}, algorithm {}", keyPath, signAlgorithm);
         crtPath = cryptoIO.writeCertToDERFile(certificateHolder, Paths.get(basePath, crtPath));
         logger.info("Path to certificate: {}, algorithm {}", crtPath, signAlgorithm);
 
         try {
             certificateHolder = cryptoIO.readCertFromDER(crtPath);
-            PKCS8EncodedKeySpec keySpec = cryptoIO.readPkFromDER(keyPath);
+            PKCS8EncodedKeySpec keySpec = cryptoIO.readPkFromPKCS8(keyPath);
             X509Certificate certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder);
 
             SignAlgorithmType algorithmType = SignAlgorithmType.findByAlgorithmName(certificate.getSigAlgName());

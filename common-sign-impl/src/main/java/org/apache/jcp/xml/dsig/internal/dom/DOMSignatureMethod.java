@@ -35,6 +35,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import java.util.List;
 import javax.xml.crypto.MarshalException;
+import javax.xml.crypto.dsig.SignedInfo;
 import javax.xml.crypto.dsig.SignatureMethod;
 import javax.xml.crypto.dsig.XMLSignContext;
 import javax.xml.crypto.dsig.XMLSignatureException;
@@ -219,7 +220,7 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
     }
 
     @Override
-    boolean verify(Key key, DOMSignedInfo si, byte[] sig,
+    boolean verify(Key key, SignedInfo si, byte[] sig,
                    XMLValidateContext context)
             throws InvalidKeyException, SignatureException, XMLSignatureException
     {
@@ -248,9 +249,10 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
             logger.debug("JCA Algorithm: {}", getJCAAlgorithm());
             logger.debug("Signature Bytes length: {}", sig.length);
         }
-        si.canonicalize(context, new SignerOutputStream(signature));
 
-        try {
+        try (SignerOutputStream outputStream = new SignerOutputStream(signature)) {
+            ((DOMSignedInfo)si).canonicalize(context, outputStream);
+
             Type type = getAlgorithmType();
             if (type == Type.DSA) {
                 int size = ((DSAKey)key).getParams().getQ().bitLength();
@@ -266,8 +268,7 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
         }
     }
 
-    @Override
-    byte[] sign(Key key, DOMSignedInfo si, XMLSignContext context)
+    byte[] sign(Key key, SignedInfo si, XMLSignContext context)
             throws InvalidKeyException, XMLSignatureException
     {
         if (key == null || si == null) {
@@ -295,9 +296,9 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
             logger.debug("JCA Algorithm: {}", getJCAAlgorithm());
         }
 
-        si.canonicalize(context, new SignerOutputStream(signature));
+        try (SignerOutputStream outputStream = new SignerOutputStream(signature)) {
+            ((DOMSignedInfo)si).canonicalize(context, outputStream);
 
-        try {
             Type type = getAlgorithmType();
             if (type == Type.DSA) {
                 int size = ((DSAKey)key).getParams().getQ().bitLength();

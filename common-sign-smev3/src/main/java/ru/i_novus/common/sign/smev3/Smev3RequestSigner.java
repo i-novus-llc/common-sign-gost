@@ -113,7 +113,7 @@ public final class Smev3RequestSigner {
      * @param contentElement        подписываемый объект элемента
      * @param pemEncodedPrivateKey  закрытый ключ в формате PEM
      * @param pemEncodedCertificate сертификат ЭП в формате PEM
-     * @return
+     * @return блок XML с данными подписи
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
@@ -140,7 +140,7 @@ public final class Smev3RequestSigner {
      * @param contentElement   подписываемый объект элемента
      * @param pfxEncoded       двоичные данные файла файла PKCS#12 закодированный в Base64
      * @param keystorePassword пароль к закрытому ключу
-     * @return
+     * @return блок XML с элементами подписи
      * @throws IOException
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
@@ -200,7 +200,7 @@ public final class Smev3RequestSigner {
      * @param contentElement  подписываемый объект элемента
      * @param privateKey      закрытый ключ ЭП
      * @param x509Certificate сертификат ЭП
-     * @return
+     * @return блок XML с элементами подписи
      * @throws XMLSecurityException
      * @throws GeneralSecurityException
      * @throws TransformerException
@@ -387,7 +387,7 @@ public final class Smev3RequestSigner {
      * Получает URI алгоритма формирования подписи
      *
      * @param signAlgorithmType тип алгоритма подписи
-     * @return
+     * @return URI алгоритма формирования подписи
      * @throws IllegalArgumentException
      */
     public static String getSignatureMethodAlgorithm(SignAlgorithmType signAlgorithmType) {
@@ -413,7 +413,7 @@ public final class Smev3RequestSigner {
      * Получает URI алгоритма расчета хеш-суммы
      *
      * @param signAlgorithmType тип алгоритма подписи
-     * @return
+     * @return URI алгоритма расчета хеш-суммы
      * @throws IllegalArgumentException
      */
     public static String getDigestMethodAlgorithm(SignAlgorithmType signAlgorithmType) {

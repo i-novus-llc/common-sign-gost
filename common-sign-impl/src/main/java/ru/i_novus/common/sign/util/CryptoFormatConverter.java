@@ -114,7 +114,7 @@ public class CryptoFormatConverter {
      * @param pemEncoded данные в base64 (PEM-формат в base64)
      * @return закрытый ключ PKCS#8 либо сертификат
      */
-    private byte[] decodePem(final String pemEncoded) {
+    public static byte[] decodePem(final String pemEncoded) {
         String pem = pemEncoded;
         try {
             pem = pem.replace(pem.substring(pem.indexOf("-----END"), pem.lastIndexOf("-----") + 5), "");

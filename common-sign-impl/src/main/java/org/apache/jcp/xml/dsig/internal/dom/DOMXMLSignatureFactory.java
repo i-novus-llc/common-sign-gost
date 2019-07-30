@@ -56,9 +56,13 @@ import org.w3c.dom.Node;
 /**
  * DOM-based implementation of XMLSignatureFactory.
  *
- * @author Sean Mullan
  */
 public final class DOMXMLSignatureFactory extends XMLSignatureFactory {
+
+    /**
+     * Initializes a new instance of this class.
+     */
+    public DOMXMLSignatureFactory() {}
 
     @Override
     public XMLSignature newXMLSignature(SignedInfo si, KeyInfo ki) {
@@ -211,7 +215,7 @@ public final class DOMXMLSignatureFactory extends XMLSignatureFactory {
             throw new MarshalException("Document implementation must " +
                     "support DOM Level 2 and be namespace aware");
         }
-        if (tag.equals("Signature") && XMLSignature.XMLNS.equals(namespace)) {
+        if ("Signature".equals(tag) && XMLSignature.XMLNS.equals(namespace)) {
             return new DOMXMLSignature(element, context, getProvider());
         } else {
             throw new MarshalException("invalid Signature tag: " + namespace + ":" + tag);
