@@ -50,14 +50,18 @@ public class CryptoTest {
     @Test
     public void testAllAlgorithms() throws IOException, GeneralSecurityException {
         String basePath = Files.createTempDirectory("keys").toString();
-        for (SignAlgorithmType signAlgorithm : SignAlgorithmType.values()) {
-            if (signAlgorithm.getAvailableParameterSpecificationNames().isEmpty()) {
-                testOneAlgorithm(signAlgorithm, null, basePath);
-            } else {
-                for (String parameterSpecName : signAlgorithm.getAvailableParameterSpecificationNames()) {
-                    testOneAlgorithm(signAlgorithm, parameterSpecName, basePath);
+        try {
+            for (SignAlgorithmType signAlgorithm : SignAlgorithmType.values()) {
+                if (signAlgorithm.getAvailableParameterSpecificationNames().isEmpty()) {
+                    testOneAlgorithm(signAlgorithm, null, basePath);
+                } else {
+                    for (String parameterSpecName : signAlgorithm.getAvailableParameterSpecificationNames()) {
+                        testOneAlgorithm(signAlgorithm, parameterSpecName, basePath);
+                    }
                 }
             }
+        } finally {
+            Files.deleteIfExists(Paths.get(basePath));
         }
     }
 
@@ -90,8 +94,34 @@ public class CryptoTest {
 
             logger.info("Path to certificates and keys: {}", basePath);
         } finally {
-            Files.delete(Paths.get(keyPath));
-            Files.delete(Paths.get(crtPath));
+            Files.deleteIfExists(Paths.get(keyPath));
+            Files.deleteIfExists(Paths.get(crtPath));
+        }
+    }
+
+    @Test
+    public void testGeneratePKCS12_GOST2012_256() throws IOException{
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.ECGOST3410_2012_256;
+
+        KeyPair keyPair = CryptoUtil.generateKeyPair(signAlgorithmType, signAlgorithmType.getAvailableParameterSpecificationNames().get(0));
+        checkKeyPair(keyPair);
+
+        CryptoIO cryptoIO = CryptoIO.getInstance();
+
+        X509CertificateHolder certificateHolder = selfSignedCertificate(keyPair, signAlgorithmType);
+        if (certificateHolder == null)
+            throw new IllegalArgumentException("Signature algorithm '" + signAlgorithmType.name() + "' is not supported");
+
+        X509Certificate certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder);
+
+        String basePath = Files.createTempDirectory("keys").toString();
+        Path fullPath = Paths.get(basePath, "PKCS12_GOST2012_256.pfx");
+        try {
+            cryptoIO.createPkcs12File(fullPath, "12345678", keyPair.getPrivate(), new X509Certificate[]{certificate});
+            logger.info("Full path: {}", fullPath);
+        } finally {
+            Files.deleteIfExists(fullPath);
+            Files.deleteIfExists(Paths.get(basePath));
         }
     }
 
