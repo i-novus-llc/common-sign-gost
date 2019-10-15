@@ -54,12 +54,12 @@ public final class Smev2RequestSigner {
      * @param message сообщение
      * @param encodedCertificate сертификат
      * @param encodedKey закрытый ключ в формате PEM
-     * @throws SOAPException
-     * @throws InvalidCanonicalizerException
-     * @throws GeneralSecurityException
-     * @throws TransformerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signSmevRequest(SOAPMessage message, String encodedCertificate, String encodedKey) throws SOAPException,
             InvalidCanonicalizerException, GeneralSecurityException, TransformerException, CanonicalizationException, IOException {
@@ -75,13 +75,14 @@ public final class Smev2RequestSigner {
      * @param message          SOAP-сообщение
      * @param pfxEncoded       двоичные данные файла PKCS#12 закодированный в Base64
      * @param keystorePassword пароль к закрытому ключу
-     * @throws IOException
-     * @throws XMLSecurityException
-     * @throws SOAPException
-     * @throws GeneralSecurityException
-     * @throws TransformerException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws XMLSecurityException ошибка безопасности при обработке XML
+     * @throws IOException ошибка ввода-вывода
      */
-    public static void signSmev2RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword) throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
+    public static void signSmev2RequestWithPkcs12(SOAPMessage message, String pfxEncoded, String keystorePassword)
+            throws IOException, XMLSecurityException, SOAPException, GeneralSecurityException, TransformerException {
 
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
@@ -103,12 +104,12 @@ public final class Smev2RequestSigner {
      * @param message сообщение
      * @param privateKey закрытый ключ в формате {@link PrivateKey}
      * @param certificate сертификат в формате {@link X509Certificate}
-     * @throws SOAPException
-     * @throws InvalidCanonicalizerException
-     * @throws GeneralSecurityException
-     * @throws TransformerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signSmevRequest(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException,
             InvalidCanonicalizerException, GeneralSecurityException, TransformerException, CanonicalizationException, IOException {

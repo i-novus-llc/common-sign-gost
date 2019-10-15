@@ -22,7 +22,6 @@ package ru.i_novus.common.sign.util;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -39,7 +38,6 @@ import org.bouncycastle.pkcs.PKCS12SafeBagBuilder;
 import org.bouncycastle.pkcs.bc.BcPKCS12MacCalculatorBuilder;
 import org.bouncycastle.pkcs.bc.BcPKCS12PBEOutputEncryptorBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
-import org.bouncycastle.util.io.pem.PemReader;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
 import java.io.*;
@@ -71,7 +69,6 @@ public class CryptoIO {
     }
 
     public PrivateKey readPrivateKey(InputStream input) throws IOException, GeneralSecurityException {
-//        byte[] bytes = inputStreamToByteArray(input);
         PEMParser pemReader = new PEMParser(new InputStreamReader(input));
 
         /*

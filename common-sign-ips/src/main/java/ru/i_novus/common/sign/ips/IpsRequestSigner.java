@@ -57,12 +57,12 @@ public final class IpsRequestSigner {
      * @param clientEntityId идентификатор системы
      * @param encodedCertificate сертификат в формате PEM
      * @param encodedPrivateKey закрытый ключ в формате PEM
-     * @throws SOAPException
-     * @throws GeneralSecurityException
-     * @throws TransformerException
-     * @throws InvalidCanonicalizerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signIpsRequest(SOAPMessage message, String soapService, String soapAction, String clientEntityId,
                                       String encodedCertificate, String encodedPrivateKey) throws
@@ -83,12 +83,12 @@ public final class IpsRequestSigner {
      * @param clientEntityId идентификатор системы
      * @param certificate сертификат в формате
      * @param privateKey закрытый ключ в формате {@link java.security.PrivateKey}
-     * @throws SOAPException
-     * @throws GeneralSecurityException
-     * @throws TransformerException
-     * @throws InvalidCanonicalizerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signIpsRequest(SOAPMessage message, String soapService, String soapAction, String clientEntityId,
                                       PrivateKey privateKey, X509Certificate certificate) throws
@@ -135,12 +135,12 @@ public final class IpsRequestSigner {
      * @param message сообщение
      * @param encodedCertificate сертификат в формате PEM
      * @param encodedKey закрытый ключ в формате PEM
-     * @throws SOAPException
-     * @throws TransformerException
-     * @throws GeneralSecurityException
-     * @throws InvalidCanonicalizerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signIpsResponse(SOAPMessage message, String encodedCertificate, String encodedKey) throws SOAPException,
             TransformerException, GeneralSecurityException, InvalidCanonicalizerException, CanonicalizationException, IOException {
@@ -155,12 +155,12 @@ public final class IpsRequestSigner {
      * @param message сообщение
      * @param privateKey закрытый ключ в формате PEM
      * @param certificate сертификат в формате PEM
-     * @throws SOAPException
-     * @throws TransformerException
-     * @throws GeneralSecurityException
-     * @throws InvalidCanonicalizerException
-     * @throws CanonicalizationException
-     * @throws IOException
+     * @throws SOAPException ошибка обработки SOAP-пакета
+     * @throws GeneralSecurityException ошибка подписи
+     * @throws TransformerException ошибка трансформации сообщения
+     * @throws InvalidCanonicalizerException не найден необходимый каноникалайзер
+     * @throws CanonicalizationException ошибка каноникализации сообщения
+     * @throws IOException ошибка ввода-вывода
      */
     public static void signIpsResponse(SOAPMessage message, PrivateKey privateKey, X509Certificate certificate) throws SOAPException,
             TransformerException, GeneralSecurityException, InvalidCanonicalizerException, CanonicalizationException, IOException {

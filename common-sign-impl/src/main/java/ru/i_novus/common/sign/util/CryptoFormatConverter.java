@@ -47,6 +47,11 @@ public class CryptoFormatConverter {
         Init.init();
     }
 
+    /**
+     * Create an instance of CryptoFormatConverter object
+     *
+     * @return CryptoFormatConverter instance
+     */
     public static CryptoFormatConverter getInstance() {
         return new CryptoFormatConverter();
     }

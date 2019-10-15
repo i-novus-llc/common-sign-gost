@@ -26,6 +26,7 @@ import javax.xml.soap.SOAPMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 
 public final class SoapUtil {
     private SoapUtil() {
@@ -37,19 +38,23 @@ public final class SoapUtil {
         try {
             MessageFactory mFactory = MessageFactory.newInstance(protocol);
             message = mFactory.createMessage(null, xmlData);
-        } catch (SOAPException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (SOAPException e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return message;
     }
 
     public static String getSoapMessageContent(SOAPMessage message) {
         String content;
-        try(ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             message.writeTo(outputStream);
             content = outputStream.toString().replace("&#13;", "");
-        } catch (SOAPException | IOException e) {
-            throw new RuntimeException(e);
+        } catch (SOAPException e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return content;
     }
