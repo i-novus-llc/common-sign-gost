@@ -19,8 +19,6 @@ package ru.i_novus.common.sign.util;
  * limitations under the License.
  * -----------------------------------------------------------------
  */
-
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -30,11 +28,14 @@ import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
 import java.io.ByteArrayInputStream;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.Security;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.security.*;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import static ru.i_novus.common.sign.util.Base64Util.getBase64Decoded;
@@ -62,9 +63,12 @@ public class CryptoFormatConverter {
      * @param certificate certificate
      * @return certificate in PEM format
      */
-    @SneakyThrows
     public String getPEMEncodedCertificate(X509Certificate certificate) {
-        return getBase64EncodedString(CryptoIO.getInstance().writeCertToByteArray(new JcaX509CertificateHolder(certificate)));
+        try {
+            return getBase64EncodedString(CryptoIO.getInstance().writeCertToByteArray(new JcaX509CertificateHolder(certificate)));
+        } catch (CertificateEncodingException e) {
+            throw new IllegalArgumentException("Cannot convert certificate to PEM", e);
+        }
     }
 
     /**
@@ -73,17 +77,25 @@ public class CryptoFormatConverter {
      * @param pemEncodedCertificate PEM encoded certificate
      * @return certificate in {@link X509Certificate} format
      */
-    @SneakyThrows
     public X509Certificate getCertificateFromPEMEncoded(String pemEncodedCertificate) {
-        return (X509Certificate) CertificateFactory.getInstance("X.509", CryptoUtil.CRYPTO_PROVIDER_NAME).
-                generateCertificate(new ByteArrayInputStream(decodePem(pemEncodedCertificate)));
+        try {
+            return (X509Certificate) CertificateFactory.getInstance("X.509", CryptoUtil.CRYPTO_PROVIDER_NAME).
+                    generateCertificate(new ByteArrayInputStream(decodePem(pemEncodedCertificate)));
+        } catch (CertificateException e) {
+            throw new IllegalArgumentException("Cannot convert certificate from PEM", e);
+        } catch (NoSuchProviderException e) {
+            throw new IllegalStateException("Provider is unknown", e);
+        }
     }
 
-    @SneakyThrows
     public X509Certificate getCertificateFromHolder(X509CertificateHolder certificateHolder) {
         JcaX509CertificateConverter jcaConverter = new JcaX509CertificateConverter();
         jcaConverter.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        return jcaConverter.getCertificate(certificateHolder);
+        try {
+            return jcaConverter.getCertificate(certificateHolder);
+        } catch (CertificateException e) {
+            throw new IllegalArgumentException("Cannot receive certificate from Holder", e);
+        }
     }
 
     /**
@@ -93,10 +105,17 @@ public class CryptoFormatConverter {
      * @param pemEncodedKey PEM encoded private key
      * @return private key in {@link PrivateKey} format
      */
-    @SneakyThrows
     public PrivateKey getPKFromPEMEncoded(SignAlgorithmType signAlgorithmType, String pemEncodedKey) {
-        return KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
-                .generatePrivate(new PKCS8EncodedKeySpec(decodePem(pemEncodedKey)));
+        try {
+            return KeyFactory.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CryptoUtil.CRYPTO_PROVIDER_NAME)
+                    .generatePrivate(new PKCS8EncodedKeySpec(decodePem(pemEncodedKey)));
+        } catch (NoSuchProviderException e) {
+            throw new IllegalArgumentException ("Provider is not initialized", e);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Algorithm " + signAlgorithmType + " is not supported", e);
+        } catch (InvalidKeySpecException e) {
+            throw new IllegalArgumentException("Wrong private key", e);
+        }
     }
 
     /**
@@ -105,11 +124,13 @@ public class CryptoFormatConverter {
      * @param pfxFileEncoded PKCS#12(PFX) file encoded
      * @return certificate in PEM format
      */
-    @SneakyThrows
     public String getPEMEncodedCertificateFromPKCS12(String pfxFileEncoded, String keystorePass){
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64Util.getBase64Decoded(pfxFileEncoded))) {
+        byte[] decoded = Base64Util.getBase64Decoded(pfxFileEncoded);
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(decoded)) {
             X509Certificate x509Certificate = CryptoIO.getInstance().readCertificateFromPKCS12(inputStream, keystorePass);
             return getPEMEncodedCertificate(x509Certificate);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

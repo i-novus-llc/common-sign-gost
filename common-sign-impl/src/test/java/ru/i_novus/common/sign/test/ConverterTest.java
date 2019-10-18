@@ -30,6 +30,7 @@ import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.Verifier;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,15 +50,13 @@ public class ConverterTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testReadPKCS12() {
+    public void testReadPKCS12() throws Exception {
         testKeysInPKCS12(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/cryptopro/gost2012_256.pfx").toURI()), "12345678");
         testKeysInPKCS12(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/cryptopro/gost2012_512.pfx").toURI()), "12345678");
         testKeysInPKCS12(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/cryptopro/gost2012_512_emdr.pfx").toURI()), "12345678");
     }
 
-    @SneakyThrows
-    private void testKeysInPKCS12(Path path, String password) {
+    private void testKeysInPKCS12(Path path, String password) throws Exception {
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
         try (InputStream fileInputStream = Files.newInputStream(path)) {
@@ -86,8 +85,7 @@ public class ConverterTest {
     }
 
     @Test
-    @SneakyThrows
-    public void testCreatePKCS12() {
+    public void testCreatePKCS12() throws Exception {
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
         X509Certificate certificate = cryptoIO.readCertFromPEM(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/raw/gost2001_crt.pem").toURI()));
@@ -100,7 +98,7 @@ public class ConverterTest {
             logger.info("Generated PKCS file: {}", temporaryFile.toString());
             testKeysInPKCS12(temporaryFile, password);
         } finally {
-            Files.delete(temporaryFile);
+            Files.deleteIfExists(temporaryFile);
         }
     }
 

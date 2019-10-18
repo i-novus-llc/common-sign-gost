@@ -19,15 +19,19 @@
  */
 package ru.i_novus.common.sign;
 
-import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.algorithms.SignatureAlgorithm;
+import org.apache.xml.security.algorithms.SignatureAlgorithmSpi;
+import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
+import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import ru.i_novus.common.sign.api.GostIds;
 
 import java.security.Security;
 
+@Slf4j
 public final class Init {
 
     private static boolean initialized = false;
@@ -35,7 +39,6 @@ public final class Init {
     private Init() {
     }
 
-    @SneakyThrows
     public synchronized static void init() {
         if (initialized) {
             return;
@@ -71,14 +74,22 @@ public final class Init {
         JCEMapper.register(GostIds.GOST3410_2012_512_URN, signature);
 
         // GOST3410-2001
-        SignatureAlgorithm.register(GostIds.GOST3410_2001_URI, SignatureGost.Gost3410_2001_Uri.class);
-        SignatureAlgorithm.register(GostIds.GOST3410_2001_URN, SignatureGost.Gost3410_2001_Urn.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2001_URI, SignatureGost.Gost3410_2001_Uri.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2001_URN, SignatureGost.Gost3410_2001_Urn.class);
         // GOST-3410-2012-256
-        SignatureAlgorithm.register(GostIds.GOST3410_2012_256_URI, SignatureGost.Gost3410_2012_256_Uri.class);
-        SignatureAlgorithm.register(GostIds.GOST3410_2012_256_URN, SignatureGost.Gost3410_2012_256_Urn.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2012_256_URI, SignatureGost.Gost3410_2012_256_Uri.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2012_256_URN, SignatureGost.Gost3410_2012_256_Urn.class);
         // GOST-3410-2012-512
-        SignatureAlgorithm.register(GostIds.GOST3410_2012_512_URI, SignatureGost.Gost3410_2012_512_Uri.class);
-        SignatureAlgorithm.register(GostIds.GOST3410_2012_512_URN, SignatureGost.Gost3410_2012_512_Urn.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2012_512_URI, SignatureGost.Gost3410_2012_512_Uri.class);
+        registerSignatureAlgorithm(GostIds.GOST3410_2012_512_URN, SignatureGost.Gost3410_2012_512_Urn.class);
         initialized = true;
+    }
+
+    private static void registerSignatureAlgorithm(String algorithmURI, Class<? extends SignatureAlgorithmSpi> implementation) {
+        try {
+            SignatureAlgorithm.register(algorithmURI, implementation);
+        } catch (AlgorithmAlreadyRegisteredException | ClassNotFoundException | XMLSignatureException e) {
+            logger.info("Cannot register algorithm '{}'", algorithmURI, e);
+        }
     }
 }

@@ -100,7 +100,7 @@ public class CryptoTest {
     }
 
     @Test
-    public void testGeneratePKCS12_GOST2012_256() throws IOException{
+    public void testGeneratePKCS12_GOST2012_256() throws IOException, NoSuchAlgorithmException, NoSuchProviderException {
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.ECGOST3410_2012_256;
 
         KeyPair keyPair = CryptoUtil.generateKeyPair(signAlgorithmType, signAlgorithmType.getAvailableParameterSpecificationNames().get(0));

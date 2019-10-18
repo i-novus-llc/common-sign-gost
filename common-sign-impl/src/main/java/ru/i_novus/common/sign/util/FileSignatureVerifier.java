@@ -25,9 +25,11 @@ import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -51,23 +53,29 @@ public class FileSignatureVerifier {
     }
 
     /**
-     * Верифицирует значение Digest использованный при подписи
+     * Верифицирует значение Digest, использованного при подписи
      * @param dataHandler          интерфейс для получения бинарных данных исходного файла
      * @param signedDataByteArray  бинарные данные подписи файла
-     * @return
+     * @return результат верификации Digest, использованного при подписи. true - значение Digest верно, false - Digest не прошел проверку
+     *
      * @throws CMSException
-     * @throws GeneralSecurityException
-     * @throws IOException
      */
-    public static boolean verifyDigest(DataHandler dataHandler, byte[] signedDataByteArray) throws CMSException, GeneralSecurityException, IOException {
+    public static boolean verifyDigest(DataHandler dataHandler, byte[] signedDataByteArray) throws CMSException {
 
-        byte[] data = org.bouncycastle.util.io.Streams.readAll(dataHandler.getInputStream());
+        byte[] data;
+        try {
+            data = org.bouncycastle.util.io.Streams.readAll(dataHandler.getInputStream());
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot read data from DataHandler", e);
+        }
 
         CMSSignedData signedData = new CMSSignedData(signedDataByteArray);
 
-        X509Certificate x509Certificate = getX509Certificate(signedData);
+        X509Certificate x509Certificate = getX509Certificate(signedData)
+                .orElseThrow(() -> new IllegalStateException("Certificate was not received from signed data"));
 
-        SignerInformation signerInformation = getSignerInformation(signedData);
+        SignerInformation signerInformation = getSignerInformation(signedData)
+                .orElseThrow(() -> new IllegalStateException("Signature metadata was not received from signed data"));
 
         SignAlgorithmType signAlgorithmType = SignAlgorithmType.findByCertificate(x509Certificate);
 
@@ -87,7 +95,7 @@ public class FileSignatureVerifier {
     /**
      * Верифицирует подпись файла
      * @param signedDataByteArray бинарные данные подписи файла
-     * @return
+     * @return результат верификации подписи. true - подпись верна, false - подпись не прошла проверку
      * @throws CMSException
      * @throws GeneralSecurityException
      * @throws IOException
@@ -96,9 +104,11 @@ public class FileSignatureVerifier {
 
         CMSSignedData signedData = new CMSSignedData(signedDataByteArray);
 
-        X509Certificate x509Certificate = getX509Certificate(signedData);
+        X509Certificate x509Certificate = getX509Certificate(signedData)
+                .orElseThrow(() -> new IllegalStateException("Certificate was not received from signed data"));
 
-        SignerInformation signerInformation = getSignerInformation(signedData);
+        SignerInformation signerInformation = getSignerInformation(signedData)
+                .orElseThrow(() -> new IllegalStateException("Signature metadata was not received from signed data"));
 
         byte[] signatureAsByteArray = signerInformation.getSignature();
 
@@ -125,20 +135,20 @@ public class FileSignatureVerifier {
     /**
      * Получает метаданные подписи из объекта CMSSignedData
      * @param signedData объектное представление подписи
-     * @return
+     * @return метаданные подписи
      */
-    private static SignerInformation getSignerInformation(CMSSignedData signedData) {
+    private static Optional<SignerInformation> getSignerInformation(CMSSignedData signedData) {
         SignerInformationStore signerInformationStore = signedData.getSignerInfos();
-        return signerInformationStore.getSigners().stream().findFirst().get();
+        return signerInformationStore.getSigners().stream().findFirst();
     }
 
     /**
      * Получает метаданные сертификата ЭП из объекта CMSSignedData
      * @param signedData объектное представление подписи
-     * @return
+     * @return метаданные сертификата ЭП
      */
-    private static X509Certificate getX509Certificate(CMSSignedData signedData) throws CMSException {
-        X509CertificateHolder x509CertificateHolder = signedData.getCertificates().getMatches(null).stream().findFirst().get();
-        return CryptoFormatConverter.getInstance().getCertificateFromHolder(x509CertificateHolder);
+    private static Optional<X509Certificate> getX509Certificate(CMSSignedData signedData) {
+        Optional<X509CertificateHolder> x509CertificateHolder = signedData.getCertificates().getMatches(null).stream().findFirst();
+        return x509CertificateHolder.map(certificateHolder -> CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder));
     }
 }

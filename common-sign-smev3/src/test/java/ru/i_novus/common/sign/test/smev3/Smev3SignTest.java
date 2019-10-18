@@ -55,82 +55,81 @@ public class Smev3SignTest {
     }
 
     @Test
-    public void testSignAckRequestGost2001() {
+    public void testSignAckRequestGost2001() throws Exception {
         signAndSimpleCheckMessage(getAckRequest(), SignAlgorithmType.ECGOST3410, "AckRequestRequest");
     }
 
     @Test
-    public void testSignGetRequestRequestGost2001() {
+    public void testSignGetRequestRequestGost2001() throws Exception {
         signAndSimpleCheckMessage(getGetRequestRequest(), SignAlgorithmType.ECGOST3410, "GetRequestRequest");
     }
 
     @Test
-    public void testSignGetResponseRequestGost2001() {
+    public void testSignGetResponseRequestGost2001() throws Exception {
         signAndSimpleCheckMessage(getGetResponseRequest(), SignAlgorithmType.ECGOST3410, "GetResponseRequest");
     }
 
     @Test
-    public void testSignSendRequestRequestGost2001() {
+    public void testSignSendRequestRequestGost2001() throws Exception {
         signAndSimpleCheckMessage(getSendRequestRequest(), SignAlgorithmType.ECGOST3410, "SendRequestRequest");
     }
 
     @Test
-    public void testSignSendResponseRequestGost2001() {
+    public void testSignSendResponseRequestGost2001() throws Exception {
         signAndSimpleCheckMessage(getSendResponseRequest(), SignAlgorithmType.ECGOST3410, "SendResponseRequest");
     }
 
     @Test
-    public void testSignAckRequestGost2012_256() {
+    public void testSignAckRequestGost2012_256() throws Exception {
         signAndSimpleCheckMessage(getAckRequest(), SignAlgorithmType.ECGOST3410_2012_256, "AckRequestRequest");
     }
 
     @Test
-    public void testSignGetRequestRequestGost2012_256() {
+    public void testSignGetRequestRequestGost2012_256() throws Exception {
         signAndSimpleCheckMessage(getGetRequestRequest(), SignAlgorithmType.ECGOST3410_2012_256, "GetRequestRequest");
     }
 
     @Test
-    public void testSignGetResponseRequestGost2012_256() {
+    public void testSignGetResponseRequestGost2012_256() throws Exception {
         signAndSimpleCheckMessage(getGetResponseRequest(), SignAlgorithmType.ECGOST3410_2012_256, "GetResponseRequest");
     }
 
     @Test
-    public void testSignSendRequestRequestGost2012_256() {
+    public void testSignSendRequestRequestGost2012_256() throws Exception {
         signAndSimpleCheckMessage(getSendRequestRequest(), SignAlgorithmType.ECGOST3410_2012_256, "SendRequestRequest");
     }
 
     @Test
-    public void testSignSendResponseRequestGost2012_256() {
+    public void testSignSendResponseRequestGost2012_256() throws Exception {
         signAndSimpleCheckMessage(getSendResponseRequest(), SignAlgorithmType.ECGOST3410_2012_256, "SendResponseRequest");
     }
 
     @Test
-    public void testSignAckRequestGost2012_512() {
+    public void testSignAckRequestGost2012_512() throws Exception {
         signAndSimpleCheckMessage(getAckRequest(), SignAlgorithmType.ECGOST3410_2012_512, "AckRequestRequest");
     }
 
     @Test
-    public void testSignGetRequestRequestGost2012_512() {
+    public void testSignGetRequestRequestGost2012_512() throws Exception {
         signAndSimpleCheckMessage(getGetRequestRequest(), SignAlgorithmType.ECGOST3410_2012_512, "GetRequestRequest");
     }
 
     @Test
-    public void testSignGetResponseRequestGost2012_512() {
+    public void testSignGetResponseRequestGost2012_512() throws Exception {
         signAndSimpleCheckMessage(getGetResponseRequest(), SignAlgorithmType.ECGOST3410_2012_512, "GetResponseRequest");
     }
 
     @Test
-    public void testSignSendRequestRequestGost2012_512() {
+    public void testSignSendRequestRequestGost2012_512() throws Exception {
         signAndSimpleCheckMessage(getSendRequestRequest(), SignAlgorithmType.ECGOST3410_2012_512, "SendRequestRequest");
     }
 
     @Test
-    public void testSignSendResponseRequestGost2012_512() {
+    public void testSignSendResponseRequestGost2012_512() throws Exception {
         signAndSimpleCheckMessage(getSendResponseRequest(), SignAlgorithmType.ECGOST3410_2012_512, "SendResponseRequest");
     }
 
-    @SneakyThrows
-    private void signAndSimpleCheckMessage(SOAPMessage message, SignAlgorithmType algorithm, String action) {
+    private void signAndSimpleCheckMessage(SOAPMessage message, SignAlgorithmType algorithm, String action) throws Exception {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
@@ -138,8 +137,7 @@ public class Smev3SignTest {
         }
     }
 
-    @SneakyThrows
-    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate x509Certificate, String action, SignAlgorithmType signAlgorithmType) {
+    private void signAndSimpleCheckMessage(SOAPMessage message, PrivateKey privateKey, X509Certificate x509Certificate, String action, SignAlgorithmType signAlgorithmType) throws Exception {
 
         assertNotNull(message);
 
@@ -155,8 +153,7 @@ public class Smev3SignTest {
         callerInformationSystemSignatureNode.getParentNode().removeChild(callerInformationSystemSignatureNode);
     }
 
-    @SneakyThrows
-    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate, final String referenceUriAttributeName, SignAlgorithmType signAlgorithmType) {
+    private void checkSignedMessage(SOAPBody soapBody, X509Certificate x509Certificate, final String referenceUriAttributeName, SignAlgorithmType signAlgorithmType)  throws Exception {
 
         assertNotNull(soapBody);
 

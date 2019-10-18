@@ -19,7 +19,6 @@
  */
 package ru.i_novus.common.sign.test.smev3;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
@@ -56,22 +55,21 @@ public class Smev3AttachmentSignTest {
     }
 
     @Test
-    public void testSignAttachmentGost2001() throws IOException, URISyntaxException {
+    public void testSignAttachmentGost2001() throws Exception {
         signAndSimpleCheckAttachment(getDataHandler(), SignAlgorithmType.ECGOST3410);
     }
 
     @Test
-    public void testSignAttachmentGost2012_256() throws IOException, URISyntaxException {
+    public void testSignAttachmentGost2012_256() throws Exception {
         signAndSimpleCheckAttachment(getDataHandler(), SignAlgorithmType.ECGOST3410_2012_256);
     }
 
     @Test
-    public void testSignAttachmentGost2012_512() throws IOException, URISyntaxException {
+    public void testSignAttachmentGost2012_512() throws Exception {
         signAndSimpleCheckAttachment(getDataHandler(), SignAlgorithmType.ECGOST3410_2012_512);
     }
 
-    @SneakyThrows
-    private void signAndSimpleCheckAttachment(DataHandler dataHandler, SignAlgorithmType algorithm) {
+    private void signAndSimpleCheckAttachment(DataHandler dataHandler, SignAlgorithmType algorithm) throws Exception {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
@@ -79,8 +77,7 @@ public class Smev3AttachmentSignTest {
         }
     }
 
-    @SneakyThrows
-    private void signAndSimpleCheckAttachment(DataHandler dataHandler, PrivateKey privateKey, X509Certificate x509Certificate) {
+    private void signAndSimpleCheckAttachment(DataHandler dataHandler, PrivateKey privateKey, X509Certificate x509Certificate) throws Exception {
 
         assertNotNull(dataHandler);
 

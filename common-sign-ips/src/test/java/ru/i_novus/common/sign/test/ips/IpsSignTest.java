@@ -54,36 +54,36 @@ public class IpsSignTest {
     }
 
     @Test
-    public void testSignIpsRequestGost2001() {
+    public void testSignIpsRequestGost2001() throws Exception {
         testSignIpsRequest(SignAlgorithmType.ECGOST3410);
     }
 
     @Test
-    public void testSignIpsResponseGost2001() {
+    public void testSignIpsResponseGost2001() throws Exception {
         testSignIpsResponse(SignAlgorithmType.ECGOST3410);
     }
 
     @Test
-    public void testSignIpsRequestGost2012_256() {
+    public void testSignIpsRequestGost2012_256() throws Exception {
         testSignIpsRequest(SignAlgorithmType.ECGOST3410_2012_256);
     }
 
     @Test
-    public void testSignIpsResponseGost2012_256() {
+    public void testSignIpsResponseGost2012_256() throws Exception {
         testSignIpsResponse(SignAlgorithmType.ECGOST3410_2012_256);
     }
 
     @Test
-    public void testSignIpsRequestGost2012_512() {
+    public void testSignIpsRequestGost2012_512() throws Exception {
         testSignIpsRequest(SignAlgorithmType.ECGOST3410_2012_512);
     }
 
     @Test
-    public void testSignIpsResponseGost2012_512() {
+    public void testSignIpsResponseGost2012_512() throws Exception {
         testSignIpsResponse(SignAlgorithmType.ECGOST3410_2012_512);
     }
 
-    private void testSignIpsRequest(SignAlgorithmType algorithm) {
+    private void testSignIpsRequest(SignAlgorithmType algorithm) throws Exception {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
@@ -91,8 +91,7 @@ public class IpsSignTest {
         }
     }
 
-    @SneakyThrows
-    private void testSignIpsRequest(PrivateKey privateKey, X509Certificate certificate) {
+    private void testSignIpsRequest(PrivateKey privateKey, X509Certificate certificate) throws Exception {
         logger.info("Prepare IPS Request signature for algorithm {}", certificate.getSigAlgName());
 
         SOAPMessage message = getIpsTestRequest();
@@ -105,7 +104,7 @@ public class IpsSignTest {
         checkSignedMessage(message);
     }
 
-    private void testSignIpsResponse(SignAlgorithmType algorithm) {
+    private void testSignIpsResponse(SignAlgorithmType algorithm) throws Exception {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
@@ -113,8 +112,7 @@ public class IpsSignTest {
         }
     }
 
-    @SneakyThrows
-    private void testSignIpsResponse(PrivateKey privateKey, X509Certificate certificate) {
+    private void testSignIpsResponse(PrivateKey privateKey, X509Certificate certificate) throws Exception {
         logger.info("Prepare IPS Response signature for algorithm {}", certificate.getSigAlgName());
         SOAPMessage message = getIpsTestResponse();
         logger.info("IPS Response message before signature: {}", getSoapMessageContent(message));

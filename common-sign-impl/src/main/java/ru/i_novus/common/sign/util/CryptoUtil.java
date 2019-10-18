@@ -20,11 +20,13 @@ package ru.i_novus.common.sign.util;
  * -----------------------------------------------------------------
  */
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
@@ -83,8 +85,8 @@ public class CryptoUtil {
      * @param parameterSpecName наименование спецификации параметров алгоритма
      * @return ключевая пара (открытый и закрытый ключи)
      */
-    @SneakyThrows
-    public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName) {
+    public static KeyPair generateKeyPair(final SignAlgorithmType signAlgorithmType, final String parameterSpecName)
+            throws NoSuchProviderException, NoSuchAlgorithmException {
         logger.info("Generating keypair, signAlgorithm: {}, parameterSpecName: {}", signAlgorithmType, parameterSpecName);
 
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(signAlgorithmType.getBouncyKeyAlgorithmName(), CRYPTO_PROVIDER_NAME);
@@ -92,7 +94,12 @@ public class CryptoUtil {
 
         logger.info("selected parameter specification name: {}", selectedParamSpec);
         if (selectedParamSpec != null) {
-            keyGen.initialize(new ECNamedCurveGenParameterSpec(selectedParamSpec), new SecureRandom());
+            try {
+                keyGen.initialize(new ECNamedCurveGenParameterSpec(selectedParamSpec), new SecureRandom());
+            } catch (InvalidAlgorithmParameterException e) {
+                logger.error("Cannot initialize KeyGen with param '{}'", selectedParamSpec, e);
+                throw new IllegalStateException("Cannot initialize KeyGen", e);
+            }
         }
 
         return keyGen.generateKeyPair();
@@ -126,7 +133,6 @@ public class CryptoUtil {
      * @param validTo       момент времени, до которого будет действителен формируемый сертификат. Если передано null, берется текущее время + 1 год
      * @return данные сертификата в формате X.509
      */
-    @SneakyThrows
     public static X509CertificateHolder selfSignedCertificate(String x509Name, KeyPair keyPair, SignAlgorithmType signAlgorithm,
                                                               Date validFrom, Date validTo) {
         X500Name name = new X500Name(x509Name);
@@ -169,12 +175,16 @@ public class CryptoUtil {
             RSAPrivateKey kk = (RSAPrivateKey) keyPair.getPrivate();
             privateKeyParameter = new RSAKeyParameters(true, kk.getModulus(), kk.getPrivateExponent());
 
-            certificateBuilder = new X509v3CertificateBuilder(
-                    name, serial,
-                    notBefore,
-                    notAfter,
-                    name,
-                    SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
+            try {
+                certificateBuilder = new X509v3CertificateBuilder(
+                        name, serial,
+                        notBefore,
+                        notAfter,
+                        name,
+                        SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyParameter));
+            } catch (IOException e) {
+                throw new UncheckedIOException("Cannot create SubjectPublicKeyInfo", e);
+            }
         }
 
         if (publicKeyParameter == null)
@@ -201,13 +211,24 @@ public class CryptoUtil {
         val = val | KeyUsage.keyAgreement;
         val = val | KeyUsage.keyEncipherment;
         val = val | KeyUsage.nonRepudiation;
-        certificateBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(val));
+        addCertificateExtension(certificateBuilder, Extension.keyUsage, true, new KeyUsage(val));
+        addCertificateExtension(certificateBuilder, Extension.basicConstraints, true, new BasicConstraints(false));
+        addCertificateExtension(certificateBuilder, Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
 
-        certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+        try {
+            return certificateBuilder.build(signerBuilder.build(privateKeyParameter));
+        } catch (OperatorCreationException e) {
+            throw new IllegalStateException("Signer could not been created for the key", e);
+        }
+    }
 
-        certificateBuilder.addExtension(Extension.extendedKeyUsage, true, new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
-
-        return certificateBuilder.build(signerBuilder.build(privateKeyParameter));
+    private static void addCertificateExtension(X509v3CertificateBuilder certificateBuilder, ASN1ObjectIdentifier oid,
+                                                boolean isCritical, ASN1Encodable value)  {
+        try {
+            certificateBuilder.addExtension(oid, isCritical, value);
+        } catch (CertIOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**
@@ -252,7 +273,7 @@ public class CryptoUtil {
         try {
             digest = MessageDigest.getInstance(algorithmName);
         } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException("Криптопровайдер не поддерживает алгоритм:" + algorithmName, ex);
+            throw new IllegalStateException("Cryptoprovider does not support algorithm '" + algorithmName + "'", ex);
         }
 
         digest.update(fileBytes);
