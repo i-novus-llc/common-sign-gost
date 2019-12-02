@@ -26,15 +26,15 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://git.i-novus.ru/i-novus-llc/common-sign-gost.git</connection>
-        <url>https://git.i-novus.ru/i-novus-llc/common-sign-gost</url>
-        <developerConnection>scm:git:https://git.i-novus.ru/i-novus-llc/common-sign-gost.git</developerConnection>
+        <connection>scm:git:https://git.i-novus.ru/util/common-sign.git</connection>
+        <url>https://git.i-novus.ru/util/common-sign</url>
+        <developerConnection>scm:git:https://git.i-novus.ru/util/common-sign.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
     <name>common-sign-gost-parent</name>
     <description>Library for signing documents by Russian GOST algorithms based on Bouncy Castle</description>
-    <url>https://git.i-novus.ru/i-novus-llc/common-sign-gost</url>
+    <url>https://github.com/i-novus-llc/common-sign-gost</url>
 
     <licenses>
         <license>
