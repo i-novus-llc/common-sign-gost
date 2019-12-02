@@ -11,8 +11,3 @@ install:
 
 script:
   - mvn --settings .maven.xml clean deploy -Prelease -B -U
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker build -t inovus/gost-sign-service common-sign-service
-  - docker images
-  - docker tag common-sign-service inovus/gost-sign-service
-  - docker push inovus/gost-sign-service

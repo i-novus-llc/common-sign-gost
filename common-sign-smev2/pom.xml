@@ -7,7 +7,7 @@
     <parent>
         <groupId>ru.i-novus.components</groupId>
         <artifactId>common-sign-gost-parent</artifactId>
-        <version>1.10-SNAPSHOT</version>
+        <version>1.9-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -29,6 +29,12 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.messaging.saaj</groupId>
+            <artifactId>saaj-impl</artifactId>
+            <version>1.5.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
