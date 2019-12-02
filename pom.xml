@@ -130,7 +130,7 @@
                     <configuration>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <useReleaseProfile>false</useReleaseProfile>
-                        <goals>deploy</goals>
+                        <goals>install</goals>
                     </configuration>
                 </plugin>
                 <plugin>
