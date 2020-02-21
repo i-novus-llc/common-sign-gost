@@ -36,11 +36,11 @@ import java.util.*;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
- * Класс, реализующий алгоритм трансформации "urn://smev2-gov-ru/xmldsig/transform" для Apache Santuario.
+ * Класс, реализующий алгоритм трансформации "urn://smev-gov-ru/xmldsig/transform" для Apache Santuario.
  */
 @Slf4j
 public final class SmevTransformSpi extends TransformSpi {
-    static final String ALGORITHM_URN = "urn://smev2-gov-ru/xmldsig/transform";
+    static final String ALGORITHM_URN = "urn://smev-gov-ru/xmldsig/transform";
 
     private static final AttributeSortingComparator attributeSortingComparator = new AttributeSortingComparator();
 

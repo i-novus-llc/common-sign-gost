@@ -214,6 +214,65 @@ public final class Smev3RequestSigner {
         return sign(contentElement.getOwnerDocument(), contentElementId, privateKey, x509Certificate);
     }
 
+    /**
+     * Создаёт блок элементов ds:Signature для указания ЭП
+     *
+     * @param referenceUriId        идентификатор подписываемого элемента
+     * @param pemEncodedCertificate сертификат ЭП в формате PEM
+     * @param signAlgorithmType     тип алгоритма ЭП
+     * @return блок элементов ds:Signature для указания ЭП
+     * @throws ParserConfigurationException
+     * @throws IllegalArgumentException
+     */
+    public static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) throws ParserConfigurationException {
+
+        Document document = DomUtil.newDocument();
+
+        Element signatureElem = document.createElementNS(DS_NS, "ds:Signature");
+
+        document.appendChild(signatureElem);
+
+        signatureElem.setAttribute("xmlns:ds", DS_NS);
+
+        Element signedInfoElem = (Element) signatureElem.appendChild(document.createElementNS(DS_NS, "ds:SignedInfo"));
+
+        Element canonicalizationMethodElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:CanonicalizationMethod"));
+
+        canonicalizationMethodElem.setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+
+        Element signatureMethodElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:SignatureMethod"));
+
+        signatureMethodElem.setAttribute("Algorithm", getSignatureMethodAlgorithm(signAlgorithmType));
+
+        Element referenceElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:Reference"));
+
+        referenceElem.setAttribute("URI", "#" + referenceUriId);
+
+        Element transformsElem = (Element) referenceElem.appendChild(document.createElementNS(DS_NS, "ds:Transforms"));
+
+        ((Element) transformsElem.appendChild(document.createElementNS(DS_NS, "ds:Transform"))).setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+
+        ((Element) transformsElem.appendChild(document.createElementNS(DS_NS, "ds:Transform"))).setAttribute("Algorithm", SmevTransformSpi.ALGORITHM_URN);
+
+        Element digestMethodElem = (Element) referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestMethod"));
+
+        digestMethodElem.setAttribute("Algorithm", getDigestMethodAlgorithm(signAlgorithmType));
+
+        referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestValue"));
+
+        signatureElem.appendChild(document.createElementNS(DS_NS, "ds:SignatureValue"));
+
+        Element keyInfoElem = (Element) signatureElem.appendChild(document.createElementNS(DS_NS, "ds:KeyInfo"));
+
+        Element x509DataElem = (Element) keyInfoElem.appendChild(document.createElementNS(DS_NS, "ds:X509Data"));
+
+        Element x509CertificateElem = (Element) x509DataElem.appendChild(document.createElementNS(DS_NS, "ds:X509Certificate"));
+
+        x509CertificateElem.setTextContent(pemEncodedCertificate);
+
+        return document.getDocumentElement();
+    }
+
     private static Node getActionNode(Element element)  {
 
         Node node = DomUtil.getNodeFirstChild(element);
@@ -322,65 +381,6 @@ public final class Smev3RequestSigner {
         final String base64Signature = new String(Base64Util.getBase64Encoded(signatureBytes));
 
         XPathAPI.selectSingleNode(signatureElem, "ds:SignatureValue").setTextContent(base64Signature);
-    }
-
-    /**
-     * Создаёт блок элементов ds:Signature для указания ЭП
-     *
-     * @param referenceUriId        идентификатор подписываемого элемента
-     * @param pemEncodedCertificate сертификат ЭП в формате PEM
-     * @param signAlgorithmType     тип алгоритма ЭП
-     * @return
-     * @throws ParserConfigurationException
-     * @throws IllegalArgumentException
-     */
-    private static Element createSignatureElements(final String referenceUriId, final String pemEncodedCertificate, SignAlgorithmType signAlgorithmType) throws ParserConfigurationException {
-
-        Document document = DomUtil.newDocument();
-
-        Element signatureElem = document.createElementNS(DS_NS, "ds:Signature");
-
-        document.appendChild(signatureElem);
-
-        signatureElem.setAttribute("xmlns:ds", DS_NS);
-
-        Element signedInfoElem = (Element) signatureElem.appendChild(document.createElementNS(DS_NS, "ds:SignedInfo"));
-
-        Element canonicalizationMethodElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:CanonicalizationMethod"));
-
-        canonicalizationMethodElem.setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
-
-        Element signatureMethodElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:SignatureMethod"));
-
-        signatureMethodElem.setAttribute("Algorithm", getSignatureMethodAlgorithm(signAlgorithmType));
-
-        Element referenceElem = (Element) signedInfoElem.appendChild(document.createElementNS(DS_NS, "ds:Reference"));
-
-        referenceElem.setAttribute("URI", "#" + referenceUriId);
-
-        Element transformsElem = (Element) referenceElem.appendChild(document.createElementNS(DS_NS, "ds:Transforms"));
-
-        ((Element) transformsElem.appendChild(document.createElementNS(DS_NS, "ds:Transform"))).setAttribute("Algorithm", Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
-
-        ((Element) transformsElem.appendChild(document.createElementNS(DS_NS, "ds:Transform"))).setAttribute("Algorithm", SmevTransformSpi.ALGORITHM_URN);
-
-        Element digestMethodElem = (Element) referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestMethod"));
-
-        digestMethodElem.setAttribute("Algorithm", getDigestMethodAlgorithm(signAlgorithmType));
-
-        referenceElem.appendChild(document.createElementNS(DS_NS, "ds:DigestValue"));
-
-        signatureElem.appendChild(document.createElementNS(DS_NS, "ds:SignatureValue"));
-
-        Element keyInfoElem = (Element) signatureElem.appendChild(document.createElementNS(DS_NS, "ds:KeyInfo"));
-
-        Element x509DataElem = (Element) keyInfoElem.appendChild(document.createElementNS(DS_NS, "ds:X509Data"));
-
-        Element x509CertificateElem = (Element) x509DataElem.appendChild(document.createElementNS(DS_NS, "ds:X509Certificate"));
-
-        x509CertificateElem.setTextContent(pemEncodedCertificate);
-
-        return document.getDocumentElement();
     }
 
     /**
