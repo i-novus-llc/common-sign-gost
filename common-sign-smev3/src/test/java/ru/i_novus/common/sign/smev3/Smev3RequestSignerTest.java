@@ -10,10 +10,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.EnumSet;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -34,25 +30,17 @@ public class Smev3RequestSignerTest {
     @Test
     public void testCreateSignatureElements() throws Exception {
 
-        Method method = Smev3RequestSigner.class.getDeclaredMethod("createSignatureElements", String.class, String.class, SignAlgorithmType.class);
-        method.setAccessible(true);
-
-        for (SignAlgorithmType signAlgorithmType : EnumSet.allOf(SignAlgorithmType.class)) {
+        for (SignAlgorithmType signAlgorithmType : SignAlgorithmType.values()) {
 
             try {
 
-                Object result = method.invoke(null, REFERENCE_URI_ID, PEM_ENCODED_CERTIFICATE, signAlgorithmType);
-
-                Assert.assertNotNull(result);
-
-                Assert.assertTrue(result instanceof Element);
+                Element resultElement = Smev3RequestSigner.createSignatureElements(REFERENCE_URI_ID, PEM_ENCODED_CERTIFICATE, signAlgorithmType);
 
                 //Signature
 
-                Element resultElement = (Element) result;
-
                 Assert.assertEquals(resultElement.getNamespaceURI(), DS_NS);
                 Assert.assertEquals(resultElement.getLocalName(), "Signature");
+                Assert.assertEquals(resultElement.getAttributes().getLength(), 1);
 
                 NodeList signatureNodes = resultElement.getChildNodes();
                 Assert.assertEquals(signatureNodes.getLength(), 3);
@@ -200,7 +188,7 @@ public class Smev3RequestSignerTest {
                 Assert.assertEquals(x509CertificateNode.getTextContent(), PEM_ENCODED_CERTIFICATE);
                 Assert.assertEquals(x509CertificateNode.getAttributes().getLength(), 0);
 
-            } catch (InvocationTargetException ex) {
+            } catch (IllegalArgumentException ex) {
 
                 switch (signAlgorithmType) {
                     case ECGOST3410:
@@ -209,14 +197,7 @@ public class Smev3RequestSignerTest {
                         assert false;
                         break;
                     default:
-
-                        Throwable cause = ex.getCause();
-
-                        if (cause != null) {
-                            assertThat(cause.getMessage(), is("Signature algorithm type " + signAlgorithmType + " is not supported."));
-                        } else
-                            assert false;
-
+                        assertThat(ex.getMessage(), is("Signature algorithm type " + signAlgorithmType + " is not supported."));
                         break;
                 }
             }
