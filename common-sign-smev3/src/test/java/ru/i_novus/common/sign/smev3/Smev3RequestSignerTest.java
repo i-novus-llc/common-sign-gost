@@ -172,6 +172,7 @@ public class Smev3RequestSignerTest {
                 Assert.assertEquals(signatureValueNode.getNamespaceURI(), DS_NS);
                 Assert.assertEquals(signatureValueNode.getLocalName(), "SignatureValue");
                 Assert.assertEquals(signatureValueNode.getTextContent(), StringUtils.EMPTY);
+                Assert.assertEquals(signatureValueNode.getAttributes().getLength(), 0);
 
                 //KeyInfo
 
@@ -197,6 +198,7 @@ public class Smev3RequestSignerTest {
                 Assert.assertEquals(x509CertificateNode.getNamespaceURI(), DS_NS);
                 Assert.assertEquals(x509CertificateNode.getLocalName(), "X509Certificate");
                 Assert.assertEquals(x509CertificateNode.getTextContent(), PEM_ENCODED_CERTIFICATE);
+                Assert.assertEquals(x509CertificateNode.getAttributes().getLength(), 0);
 
             } catch (InvocationTargetException ex) {
 
