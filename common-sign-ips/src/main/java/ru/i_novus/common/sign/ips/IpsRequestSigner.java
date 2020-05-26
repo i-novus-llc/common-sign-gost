@@ -29,6 +29,7 @@ import ru.i_novus.common.sign.util.CryptoFormatConverter;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPHeader;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
@@ -172,7 +173,11 @@ public final class IpsRequestSigner {
         // Проставляем идентификатор для элемента Body
         message.getSOAPBody().setAttribute("wsu:Id", "body");
         // Добавляем элементы MessageID
-        Node messageId = XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='MessageID']");
+        SOAPHeader soapHeader = message.getSOAPHeader();
+        if (soapHeader == null) {
+            soapHeader = message.getSOAPPart().getEnvelope().addHeader();
+        }
+        Node messageId = XPathAPI.selectSingleNode(soapHeader, "//*[local-name()='MessageID']");
         if (messageId == null) {
             message.getSOAPHeader().addChildElement("MessageID", "wsa").addTextNode(UUID.randomUUID().toString());
         }
