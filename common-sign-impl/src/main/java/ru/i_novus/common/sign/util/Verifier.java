@@ -117,7 +117,7 @@ public class Verifier {
             try {
                 valid &= signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(CRYPTO_PROVIDER_NAME).build(cert));
             } catch (CMSException | OperatorCreationException e) {
-                logger.warn("Certificate of '{}', SN='{}' is not valid", cert.getIssuerDN(), cert.getSerialNumber(), cert);
+                logger.warn("Certificate of '{}', SN='{}' is not valid", cert.getIssuerDN(), cert.getSerialNumber());
             }
         }
         return valid;
