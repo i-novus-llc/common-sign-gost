@@ -11,5 +11,6 @@ Based on Bouncy Castle libraries.
 
 [![Build Status](https://travis-ci.com/i-novus-llc/common-sign-gost.svg?branch=master)](https://travis-ci.com/i-novus-llc/common-sign-gost)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Known Vulnerabilities](https://snyk.io/test/github/i-novus-llc/common-sign-gost/badge.svg)](https://snyk.io/test/github/i-novus-llc/common-sign-gost)
 ----
 Copyright (C) 2018-2019 I-Novus, LLC
