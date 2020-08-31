@@ -4,7 +4,7 @@
 
     <groupId>ru.i-novus.components</groupId>
     <artifactId>common-sign-gost-parent</artifactId>
-    <version>1.14-SNAPSHOT</version>
+    <version>1.13-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
@@ -187,6 +187,14 @@
                     <name>release</name>
                 </property>
             </activation>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>${env.GPG_KEYNAME}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+                <gpg.defaultKeyring>false</gpg.defaultKeyring>
+                <gpg.publicKeyring>${env.TRAVIS_DIR}/pubring.gpg</gpg.publicKeyring>
+                <gpg.secretKeyring>${env.TRAVIS_DIR}/secring.gpg</gpg.secretKeyring>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
