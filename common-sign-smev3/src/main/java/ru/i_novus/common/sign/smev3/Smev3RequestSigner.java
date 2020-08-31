@@ -36,6 +36,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.soap.*;
 import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -374,9 +375,10 @@ public final class Smev3RequestSigner {
 
         Node signedInfoNode = XPathAPI.selectSingleNode(signatureElem, "ds:SignedInfo");
 
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         //считаем подпись после всех манипуляций с SignedInfo
-        byte[] signatureBytes = CryptoUtil.getSignature(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
-                .canonicalizeSubtree(signedInfoNode), privateKey, signAlgorithmType);
+        Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS).canonicalizeSubtree(signedInfoNode, buffer);
+        byte[] signatureBytes = CryptoUtil.getSignature(buffer.toByteArray(), privateKey, signAlgorithmType);
 
         final String base64Signature = new String(Base64Util.getBase64Encoded(signatureBytes));
 

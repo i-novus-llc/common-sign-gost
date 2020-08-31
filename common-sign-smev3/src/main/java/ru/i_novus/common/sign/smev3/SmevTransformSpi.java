@@ -20,10 +20,16 @@
 package ru.i_novus.common.sign.smev3;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.xml.security.c14n.CanonicalizationException;
+import org.apache.xml.security.c14n.InvalidCanonicalizerException;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformSpi;
 import org.apache.xml.security.transforms.TransformationException;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
 import java.io.ByteArrayOutputStream;
@@ -50,26 +56,20 @@ public final class SmevTransformSpi extends TransformSpi {
     }
 
     @Override
-    protected XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput,
-                                                       OutputStream argOutput, Transform argTransform) throws IOException, TransformationException {
-        if (argOutput == null)
-            return enginePerformTransform(argInput);
-        else {
-            process(argInput.getOctetStream(), argOutput);
+    protected XMLSignatureInput enginePerformTransform(
+            XMLSignatureInput input, OutputStream os, Element transformElement,
+            String baseURI, boolean secureValidation) throws IOException, TransformationException {
+        if (os == null) {
+            return enginePerformTransform(input);
+        } else {
+            process(input.getOctetStream(), os);
             XMLSignatureInput result = new XMLSignatureInput((byte[]) null);
-            result.setOutputStream(argOutput);
+            result.setOutputStream(os);
             return result;
         }
     }
 
-    @Override
-    protected XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput,
-                                                       Transform argTransform) throws IOException, TransformationException {
-        return enginePerformTransform(argInput);
-    }
-
-    @Override
-    protected XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput) throws IOException, TransformationException {
+    private XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput) throws IOException, TransformationException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         process(argInput.getOctetStream(), result);
         byte[] postTransformData = result.toByteArray();

@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <bouncycastle.version>1.66</bouncycastle.version>
         <xalan.version>2.7.2</xalan.version>
-        <xmlsec.version>2.1.5</xmlsec.version>
+        <xmlsec.version>2.2.0</xmlsec.version>
         <lombok.version>1.18.8</lombok.version>
         <junit.version>4.12</junit.version>
         <common.lang3.version>3.10</common.lang3.version>

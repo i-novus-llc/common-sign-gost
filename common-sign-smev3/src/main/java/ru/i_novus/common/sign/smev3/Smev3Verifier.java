@@ -32,6 +32,7 @@ import ru.i_novus.common.sign.util.*;
 import javax.xml.soap.SOAPBody;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Signature;
@@ -91,7 +92,9 @@ public class Smev3Verifier {
 
         Canonicalizer canonicalizer = Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
 
-        byte[] canonicalizedSignedInfo = canonicalizer.canonicalizeSubtree(signedInfoElement);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        canonicalizer.canonicalizeSubtree(signedInfoElement, buffer);
+        byte[] canonicalizedSignedInfo = buffer.toByteArray();
 
         String encodedSignatureValue = XPathUtil.evaluateString("ds:SignatureValue/text()", signatureElement, new DSNamespaceContext());
 

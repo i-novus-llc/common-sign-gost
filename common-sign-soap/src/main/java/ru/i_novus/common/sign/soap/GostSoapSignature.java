@@ -128,18 +128,21 @@ public class GostSoapSignature {
             }
         }
 
+        ByteArrayOutputStream tempBuffer = new ByteArrayOutputStream();
+
         //Считаем хэш после всех манипуляций с Body
-        final String digestValue = CryptoUtil.getBase64Digest(
-                new String(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
-                        .canonicalizeSubtree(message.getSOAPBody())), signAlgorithmType);
+        Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS).canonicalizeSubtree(message.getSOAPBody(), tempBuffer);
+        final String digestValue = CryptoUtil.getBase64Digest(new String(tempBuffer.toByteArray()), signAlgorithmType);
 
         ((SOAPElement) XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='DigestValue']"))
                 .addTextNode(digestValue);
 
         //Считаем подпись после всех манипуляций с SignedInfo
-        byte[] signature = CryptoUtil.getSignature(Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
+        tempBuffer.reset();
+        Canonicalizer.getInstance(Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS)
                 .canonicalizeSubtree(XPathAPI.selectSingleNode(message.getSOAPHeader(),
-                        "//*[local-name()='SignedInfo']")), privateKey, signAlgorithmType);
+                        "//*[local-name()='SignedInfo']"), tempBuffer);
+        byte[] signature = CryptoUtil.getSignature(tempBuffer.toByteArray(), privateKey, signAlgorithmType);
 
         ((SOAPElement) XPathAPI.selectSingleNode(message.getSOAPHeader(), "//*[local-name()='SignatureValue']"))
                 .addTextNode(getBase64EncodedString(signature));
