@@ -2,8 +2,6 @@ language: java
 jdk: openjdk11
 install: mvn --settings .travis/.maven.xml install -Dgpg.skip -Dmaven.javadoc.skip=true -B -V
 after_success:
-- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in $TRAVIS_DIR/pubring.gpg.enc -out $TRAVIS_DIR/pubring.gpg -d
-- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in $TRAVIS_DIR/secring.gpg.enc -out $TRAVIS_DIR/secring.gpg -d
 - "bash $TRAVIS_DIR/build.sh"
 env:
   global:
