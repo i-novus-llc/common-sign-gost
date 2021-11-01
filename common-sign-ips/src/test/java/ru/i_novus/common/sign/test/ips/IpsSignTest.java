@@ -20,7 +20,6 @@
 
 package ru.i_novus.common.sign.test.ips;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
@@ -40,6 +39,7 @@ import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 
 import static org.junit.Assert.*;
 import static ru.i_novus.common.sign.soap.SoapUtil.getSoapMessageContent;
@@ -87,7 +87,9 @@ public class IpsSignTest {
         for (String specName : algorithm.getAvailableParameterSpecificationNames()) {
             KeyPair keyPair = CryptoUtil.generateKeyPair(algorithm, specName);
             X509CertificateHolder certificateHolder = CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, algorithm, null, null);
-            testSignIpsRequest(keyPair.getPrivate(), CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder));
+            X509Certificate certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder);
+            testSignIpsRequest(keyPair.getPrivate(), certificate);
+            testSignIpsRequest_withTimestampExpires(keyPair.getPrivate(), certificate);
         }
     }
 
@@ -99,6 +101,19 @@ public class IpsSignTest {
 
         IpsRequestSigner.signIpsRequest(message, "https://ips-test.rosminzdrav.ru/57ad868a70751",
                 "urn:hl7-org:v3:PRPA_IN201301", "6cf8d269-e067-41a6-85fa-e35c40c44bb6", privateKey, certificate);
+
+        logger.info("IPS Request message after signature: {}", getSoapMessageContent(message));
+        checkSignedMessage(message);
+    }
+
+    private void testSignIpsRequest_withTimestampExpires(PrivateKey privateKey, X509Certificate certificate) throws Exception {
+        logger.info("Prepare IPS Request signature for algorithm {}", certificate.getSigAlgName());
+
+        SOAPMessage message = getIpsTestRequest();
+        logger.info("IPS Request message before signature: {}", getSoapMessageContent(message));
+
+        IpsRequestSigner.signIpsRequest(message, "https://ips-test.rosminzdrav.ru/57ad868a70751",
+                "urn:hl7-org:v3:PRPA_IN201301", "6cf8d269-e067-41a6-85fa-e35c40c44bb6", privateKey, certificate, ZonedDateTime.now());
 
         logger.info("IPS Request message after signature: {}", getSoapMessageContent(message));
         checkSignedMessage(message);

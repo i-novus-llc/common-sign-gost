@@ -33,6 +33,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 @Slf4j
 public class DomUtil {
@@ -91,5 +93,24 @@ public class DomUtil {
         tf.transform(new DOMSource(element), new StreamResult(writer));
 
         return writer.toString();
+    }
+
+    public static Iterable<Node> iterable(final NodeList nodeList) {
+        return () -> new Iterator<Node>() {
+
+            private int index = 0;
+
+            @Override
+            public boolean hasNext() {
+                return index < nodeList.getLength();
+            }
+
+            @Override
+            public Node next() {
+                if (!hasNext())
+                    throw new NoSuchElementException();
+                return nodeList.item(index++);
+            }
+        };
     }
 }
