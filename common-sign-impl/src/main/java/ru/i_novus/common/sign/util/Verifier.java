@@ -28,10 +28,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Security;
 import java.security.cert.CertificateException;
@@ -65,13 +63,13 @@ public class Verifier {
      * @throws CertificateException cannot construct certificate instance {@link X509Certificate}
      * @throws FileNotFoundException file cannot be found
      */
-    public boolean verifyCmsSignature(Path data, Path cmsSignature) throws CMSException, CertificateException, FileNotFoundException {
+    public boolean verifyCmsSignature(Path data, Path cmsSignature) throws CMSException, CertificateException, IOException, OperatorCreationException {
         CMSSignedData signedData;
         if (data != null) {
             CMSProcessable signedContent = new CMSProcessableFile(data.toFile());
-            signedData = new CMSSignedData(signedContent, new FileInputStream(cmsSignature.toFile()));
+            signedData = new CMSSignedData(signedContent, Files.newInputStream(cmsSignature.toFile().toPath()));
         } else {
-            signedData = new CMSSignedData(new FileInputStream(cmsSignature.toFile()));
+            signedData = new CMSSignedData(Files.newInputStream(cmsSignature.toFile().toPath()));
         }
         return verifyCmsSignature(signedData);
     }
@@ -85,7 +83,7 @@ public class Verifier {
      * @throws CMSException cannot parse passed data as CMS signature
      * @throws CertificateException cannot construct certificate instance {@link X509Certificate}
      */
-    public boolean verifyCmsSignature(byte[] content, byte[] cmsSignature) throws CMSException, CertificateException {
+    public boolean verifyCmsSignature(byte[] content, byte[] cmsSignature) throws CMSException, CertificateException, OperatorCreationException {
         CMSSignedData signedData;
         if (content != null) {
             CMSProcessable signedContent = new CMSProcessableByteArray(content);
@@ -104,7 +102,7 @@ public class Verifier {
      * @return result of verification as a boolean value. 'true' value means 'valid'
      * @throws CertificateException cannot construct certificate instance {@link X509Certificate}
      */
-    public boolean verifyCmsSignature(CMSSignedData signedData) throws CertificateException {
+    public boolean verifyCmsSignature(CMSSignedData signedData) throws CertificateException, OperatorCreationException, CMSException {
         Store<X509CertificateHolder> store = signedData.getCertificates();
         SignerInformationStore signers = signedData.getSignerInfos();
         Collection<SignerInformation> signerInformation = signers.getSigners();
@@ -117,7 +115,8 @@ public class Verifier {
             try {
                 valid &= signer.verify(new JcaSimpleSignerInfoVerifierBuilder().setProvider(CRYPTO_PROVIDER_NAME).build(cert));
             } catch (CMSException | OperatorCreationException e) {
-                logger.warn("Certificate of '{}', SN='{}' is not valid", cert.getIssuerDN(), cert.getSerialNumber());
+                logger.error("Signature for certificate of '{}', SN='{}' is not valid", cert.getIssuerDN(), cert.getSerialNumber(), e);
+                throw e;
             }
         }
         return valid;

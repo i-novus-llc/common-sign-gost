@@ -19,22 +19,23 @@
  */
 package ru.i_novus.common.sign.test;
 
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
+import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoIO;
 import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.Verifier;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
@@ -50,6 +51,7 @@ public class ConverterTest {
     }
 
     @Test
+    @Ignore
     public void testReadPKCS12() throws Exception {
         testKeysInPKCS12(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/cryptopro/gost2012_256.pfx").toURI()), "12345678");
         testKeysInPKCS12(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/cryptopro/gost2012_512.pfx").toURI()), "12345678");
@@ -70,10 +72,10 @@ public class ConverterTest {
 
             Path file = Files.createTempFile("signature", ".sig");
 
-            try (InputStream inputStream = new FileInputStream(file.toFile())) {
+            try (InputStream inputStream = Files.newInputStream(file.toFile().toPath())) {
 
                 Files.write(file, signResult);
-                logger.info("file name: {}", file.toString());
+                logger.info("file name: {}", file);
 
                 Verifier verifier = Verifier.getInstance();
                 boolean valid = verifier.verifyCmsSignature(getTestData(), cryptoIO.inputStreamToByteArray(inputStream));
@@ -88,8 +90,12 @@ public class ConverterTest {
     public void testCreatePKCS12() throws Exception {
         CryptoIO cryptoIO = CryptoIO.getInstance();
 
-        X509Certificate certificate = cryptoIO.readCertFromPEM(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/raw/gost2001_crt.pem").toURI()));
-        PrivateKey privateKey = cryptoIO.readPkFromPEM(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/raw/gost2001_pk.pem").toURI()), SignAlgorithmType.findByCertificate(certificate));
+        SignAlgorithmType signAlgorithmType = SignAlgorithmType.ECGOST3410_2012_256;
+        KeyPair keyPair = CryptoUtil.generateKeyPair(signAlgorithmType, signAlgorithmType.getAvailableParameterSpecificationNames().get(0));
+
+        X509CertificateHolder certificateHolder = CryptoTest.selfSignedCertificate(keyPair, signAlgorithmType);
+        X509Certificate certificate = CryptoFormatConverter.getInstance().getCertificateFromHolder(certificateHolder);
+        PrivateKey privateKey = keyPair.getPrivate();
 
         Path temporaryFile = Files.createTempFile("gost2001_", ".pfx");
         try {

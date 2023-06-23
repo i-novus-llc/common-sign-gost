@@ -21,7 +21,10 @@ package ru.i_novus.common.sign.test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignerDigestMismatchException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
@@ -29,17 +32,20 @@ import ru.i_novus.common.sign.util.*;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.*;
 import java.security.*;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
 @Slf4j
 public class CryptoTest {
-    private static final String TEST_CERTIFICATE_CN = "CN=I-Novus Employee, O=I-Novus LLC, E=office@i-novus.ru, L=Kazan, C=RU, STREET=Sechenova 19B";
+    static final String TEST_CERTIFICATE_CN = "CN=I-Novus Employee, O=I-Novus LLC, E=office@i-novus.ru, L=Kazan, C=RU, STREET=Sechenova 19B";
     private static final byte[] TEST_DATA_TO_SIGN = getTestData();
 
     @BeforeClass
@@ -130,7 +136,7 @@ public class CryptoTest {
         assertNotNull(keyPair.getPublic());
     }
 
-    private X509CertificateHolder selfSignedCertificate(KeyPair keyPair, SignAlgorithmType signAlgorithm) {
+    static X509CertificateHolder selfSignedCertificate(KeyPair keyPair, SignAlgorithmType signAlgorithm) {
         return CryptoUtil.selfSignedCertificate(TEST_CERTIFICATE_CN, keyPair, signAlgorithm, null, null);
     }
 
