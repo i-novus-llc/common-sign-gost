@@ -142,7 +142,7 @@ public class CryptoUtil {
         BigInteger serial = BigInteger.ONE; // serial number for self-signed does not matter a lot
 
         Date notBefore = validFrom == null ? new Date() : validFrom;
-        Date notAfter = validTo == null ? new Date(LocalDateTime.now().plusYears(1).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo;
+        Date notAfter = validTo == null ? new Date(LocalDateTime.now().plusYears(10).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()) : validTo;
 
         X509v3CertificateBuilder certificateBuilder = null;
 

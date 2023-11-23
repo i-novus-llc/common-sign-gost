@@ -45,7 +45,8 @@ import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
 @Slf4j
 public class CryptoTest {
-    static final String TEST_CERTIFICATE_CN = "CN=I-Novus Employee, O=I-Novus LLC, E=office@i-novus.ru, L=Kazan, C=RU, STREET=Sechenova 19B";
+    ///C=RU/ST=Tatarstan/L=Kazan/O=I-Novus/OU=IT/CN=fnsi-ips-gost-test/emailAddress=admin@i-novus.ru
+    static final String TEST_CERTIFICATE_CN = "CN=fnsi-adapter-ips-gost-dev, O=I-Novus LLC, E=admin@i-novus.ru, L=Kazan, C=RU, STREET=Kachalova 75";
     private static final byte[] TEST_DATA_TO_SIGN = getTestData();
 
     @BeforeClass
@@ -123,11 +124,11 @@ public class CryptoTest {
         String basePath = Files.createTempDirectory("keys").toString();
         Path fullPath = Paths.get(basePath, "PKCS12_GOST2012_256.pfx");
         try {
-            cryptoIO.createPkcs12File(fullPath, "12345678", keyPair.getPrivate(), new X509Certificate[]{certificate});
+            cryptoIO.createPkcs12File(fullPath, "", keyPair.getPrivate(), new X509Certificate[]{certificate});
             logger.info("Full path: {}", fullPath);
         } finally {
-            Files.deleteIfExists(fullPath);
-            Files.deleteIfExists(Paths.get(basePath));
+           // Files.deleteIfExists(fullPath);
+           // Files.deleteIfExists(Paths.get(basePath));
         }
     }
 
