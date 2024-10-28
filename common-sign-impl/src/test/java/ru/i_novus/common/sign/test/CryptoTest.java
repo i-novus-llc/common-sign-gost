@@ -144,4 +144,24 @@ public class CryptoTest {
         InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ru/i_novus/common/sign/test/xml/sample.xml");
         return CryptoIO.getInstance().inputStreamToByteArray(inputStream);
     }
+
+    @Test
+    public void testSignVerify() throws URISyntaxException, IOException, CertificateException, CMSException, OperatorCreationException {
+        Verifier verifier = Verifier.getInstance();
+        byte[] fileToCheck = Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/check/valid.pdf").toURI()));
+        byte[] signature = Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/check/valid.pdf.sig").toURI()));
+        byte[] mimeDecoded = Base64.getMimeDecoder().decode(signature);
+        boolean result = verifier.verifyCmsSignature(fileToCheck, mimeDecoded);
+        assertTrue(result);
+    }
+
+    @Test(expected = CMSSignerDigestMismatchException.class)
+    public void testSignVerifyInvalid() throws URISyntaxException, IOException, CertificateException, CMSException, OperatorCreationException {
+        Verifier verifier = Verifier.getInstance();
+        byte[] fileToCheck = Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/check/not_valid.pdf").toURI()));
+        byte[] signature = Files.readAllBytes(Paths.get(Thread.currentThread().getContextClassLoader().getResource("ru/i_novus/common/sign/test/check/not_valid.pdf.sig").toURI()));
+        byte[] mimeDecoded = Base64.getMimeDecoder().decode(signature);
+        boolean result = verifier.verifyCmsSignature(fileToCheck, mimeDecoded);
+        assertFalse(result);
+    }
 }
