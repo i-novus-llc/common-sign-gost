@@ -18,11 +18,11 @@
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
+            <artifactId>bcprov-jdk18on</artifactId>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
-            <artifactId>bcpkix-jdk15on</artifactId>
+            <artifactId>bcpkix-jdk18on</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.santuario</groupId>
@@ -76,7 +76,7 @@
                                     <include>org.apache.santuario:xmlsec</include>
                                 </includes>
                                 <excludes>
-                                    <exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+                                    <exclude>org.bouncycastle:bcprov-jdk18on</exclude>
                                     <exclude>org.slf4j:slf4j-simple</exclude>
                                 </excludes>
                             </artifactSet>
