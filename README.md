@@ -11,4 +11,4 @@ Additionaly, it contains methods to sign requests to SMEV 3 (http://smev3.gosusl
 
 Based on Bouncy Castle libraries.  
 ----
-Copyright (C) 2018-2020 I-Novus, LLC
+Copyright (C) 2018-2024 I-Novus, LLC
