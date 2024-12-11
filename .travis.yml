@@ -1,9 +1,0 @@
-language: java
-jdk: openjdk11
-before_install:
-  - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-  - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
-install:
-  mvn --settings .travis/.maven.xml install -Dgpg.skip -Dmaven.javadoc.skip=true -B -V
-script:
-  bash .travis/build.sh
