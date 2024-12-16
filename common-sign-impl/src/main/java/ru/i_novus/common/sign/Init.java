@@ -19,7 +19,6 @@
  */
 package ru.i_novus.common.sign;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.algorithms.JCEMapper;
 import org.apache.xml.security.algorithms.SignatureAlgorithm;
@@ -27,13 +26,14 @@ import org.apache.xml.security.algorithms.SignatureAlgorithmSpi;
 import org.apache.xml.security.exceptions.AlgorithmAlreadyRegisteredException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.common.sign.api.GostIds;
 
 import java.security.Security;
 
-@Slf4j
 public final class Init {
-
+    private static final Logger logger = LoggerFactory.getLogger(Init.class);
     private static boolean initialized = false;
 
     private Init() {

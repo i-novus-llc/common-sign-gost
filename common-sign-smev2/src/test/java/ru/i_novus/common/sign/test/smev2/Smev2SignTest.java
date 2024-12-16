@@ -19,10 +19,11 @@
  */
 package ru.i_novus.common.sign.test.smev2;
 
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.NodeList;
 import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
@@ -31,9 +32,9 @@ import ru.i_novus.common.sign.soap.SoapUtil;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
 
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
 import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -42,8 +43,8 @@ import java.security.cert.X509Certificate;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@Slf4j
 public class Smev2SignTest {
+    private static final Logger logger = LoggerFactory.getLogger(Smev2SignTest.class);
     private static final String TEST_CERTIFICATE_CN = "CN=I-Novus Employee, O=I-Novus LLC, E=office@i-novus.ru, L=Kazan, C=RU, STREET=Sechenova 19B";
 
     @BeforeClass

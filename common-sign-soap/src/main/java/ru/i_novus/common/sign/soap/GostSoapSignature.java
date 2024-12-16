@@ -20,6 +20,10 @@ package ru.i_novus.common.sign.soap;
  * -----------------------------------------------------------------
  */
 
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPHeaderElement;
+import jakarta.xml.soap.SOAPMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.Canonicalizer;
@@ -34,10 +38,7 @@ import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.DomUtil;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPHeaderElement;
-import javax.xml.soap.SOAPMessage;
+
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;

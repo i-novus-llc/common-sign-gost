@@ -19,6 +19,7 @@
  */
 package ru.i_novus.common.sign.test.smev3;
 
+import jakarta.activation.DataHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.junit.BeforeClass;
@@ -32,7 +33,6 @@ import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
 import ru.i_novus.common.sign.util.FileSignatureVerifier;
 
-import javax.activation.DataHandler;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;

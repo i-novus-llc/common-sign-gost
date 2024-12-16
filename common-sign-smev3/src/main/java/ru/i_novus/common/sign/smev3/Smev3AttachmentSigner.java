@@ -24,7 +24,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.datatypes.FileSignatureInfo;
 import ru.i_novus.common.sign.util.*;
-import javax.activation.DataHandler;
+import jakarta.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;

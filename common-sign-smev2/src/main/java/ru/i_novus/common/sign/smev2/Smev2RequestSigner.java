@@ -28,8 +28,8 @@ import ru.i_novus.common.sign.util.Base64Util;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoIO;
 
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerException;
 
 import java.io.ByteArrayInputStream;

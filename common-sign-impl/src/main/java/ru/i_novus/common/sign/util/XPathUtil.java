@@ -20,13 +20,14 @@ package ru.i_novus.common.sign.util;
  * -----------------------------------------------------------------
  */
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.xpath.*;
 
-@Slf4j
 public class XPathUtil {
+    private static final Logger logger = LoggerFactory.getLogger(XPathUtil.class);
 
     private XPathUtil() {
         // не позволяет создать экземпляр класса, класс утилитный

@@ -19,7 +19,8 @@
  */
 package ru.i_novus.common.sign.util;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -36,8 +37,10 @@ import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-@Slf4j
+
 public class DomUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(DomUtil.class);
 
     private DomUtil() {
         // не позволяет создать экземпляр класса, класс утилитный

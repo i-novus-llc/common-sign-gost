@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPMessage;
 import java.security.cert.X509Certificate;
 import java.time.ZonedDateTime;
 

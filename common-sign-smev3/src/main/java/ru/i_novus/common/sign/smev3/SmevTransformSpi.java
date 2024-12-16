@@ -19,13 +19,15 @@
  */
 package ru.i_novus.common.sign.smev3;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.c14n.CanonicalizationException;
 import org.apache.xml.security.c14n.InvalidCanonicalizerException;
+import org.apache.xml.security.signature.XMLSignatureByteInput;
 import org.apache.xml.security.signature.XMLSignatureInput;
 import org.apache.xml.security.transforms.Transform;
 import org.apache.xml.security.transforms.TransformSpi;
 import org.apache.xml.security.transforms.TransformationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -44,8 +46,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 /**
  * Класс, реализующий алгоритм трансформации "urn://smev-gov-ru/xmldsig/transform" для Apache Santuario.
  */
-@Slf4j
 public final class SmevTransformSpi extends TransformSpi {
+    private static final Logger logger = LoggerFactory.getLogger(SmevTransformSpi.class);
     static final String ALGORITHM_URN = "urn://smev-gov-ru/xmldsig/transform";
 
     private static final AttributeSortingComparator attributeSortingComparator = new AttributeSortingComparator();
@@ -62,8 +64,8 @@ public final class SmevTransformSpi extends TransformSpi {
         if (os == null) {
             return enginePerformTransform(input);
         } else {
-            process(input.getOctetStream(), os);
-            XMLSignatureInput result = new XMLSignatureInput((byte[]) null);
+            process(input.getUnprocessedInput(), os);
+            XMLSignatureInput result = new XMLSignatureByteInput(null);
             result.setOutputStream(os);
             return result;
         }
@@ -71,10 +73,10 @@ public final class SmevTransformSpi extends TransformSpi {
 
     private XMLSignatureInput enginePerformTransform(XMLSignatureInput argInput) throws IOException, TransformationException {
         ByteArrayOutputStream result = new ByteArrayOutputStream();
-        process(argInput.getOctetStream(), result);
+        process(argInput.getUnprocessedInput(), result);
         byte[] postTransformData = result.toByteArray();
 
-        return new XMLSignatureInput(postTransformData);
+        return new XMLSignatureByteInput(postTransformData);
     }
 
     @SuppressWarnings("unchecked")

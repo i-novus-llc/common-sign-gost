@@ -19,17 +19,18 @@
  */
 package ru.i_novus.common.sign.smev3;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.xml.security.c14n.Canonicalizer;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.transforms.TransformationException;
 import org.apache.xpath.XPathAPI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import ru.i_novus.common.sign.context.DSNamespaceContext;
 import ru.i_novus.common.sign.util.*;
 
-import javax.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPBody;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.ByteArrayOutputStream;
@@ -39,8 +40,8 @@ import java.security.Signature;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-@Slf4j
 public class Smev3Verifier {
+    private static final Logger logger = LoggerFactory.getLogger(Smev3Verifier.class);
 
     private Smev3Verifier() {
         // не позволяет создать экземпляр класса, класс утилитный

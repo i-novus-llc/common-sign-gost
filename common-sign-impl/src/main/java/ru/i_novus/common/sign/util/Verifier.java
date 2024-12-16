@@ -19,7 +19,6 @@
  */
 package ru.i_novus.common.sign.util;
 
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cms.*;
@@ -27,6 +26,8 @@ import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Store;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -42,8 +43,9 @@ import static ru.i_novus.common.sign.util.CryptoUtil.CRYPTO_PROVIDER_NAME;
 /**
  * Verifies signature
  */
-@Slf4j
 public class Verifier {
+    private static final Logger logger = LoggerFactory.getLogger(Verifier.class);
+
     private Verifier() {
         // don't instantiate
         Security.addProvider(new BouncyCastleProvider());

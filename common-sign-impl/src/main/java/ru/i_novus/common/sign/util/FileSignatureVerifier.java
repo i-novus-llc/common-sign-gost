@@ -20,8 +20,6 @@ package ru.i_novus.common.sign.util;
  * -----------------------------------------------------------------
  */
 
-import lombok.extern.slf4j.Slf4j;
-import javax.activation.DataHandler;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,14 +36,18 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
+
+import jakarta.activation.DataHandler;
 
 /**
  * Утилита для верификации подписи файла
  */
-@Slf4j
 public class FileSignatureVerifier {
 
+    private static final Logger logger = LoggerFactory.getLogger(FileSignatureVerifier.class);
     private static final int BUFFER_SIZE = 4096;
 
     private FileSignatureVerifier() {

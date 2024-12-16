@@ -32,9 +32,9 @@ import ru.i_novus.common.sign.soap.SoapUtil;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 import ru.i_novus.common.sign.util.CryptoUtil;
 
-import javax.xml.soap.SOAPConstants;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
 import java.io.InputStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;

@@ -33,7 +33,7 @@ import ru.i_novus.common.sign.smev3.enums.Smev3ConvertEnum;
 import ru.i_novus.common.sign.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.soap.*;
+import jakarta.xml.soap.*;
 import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

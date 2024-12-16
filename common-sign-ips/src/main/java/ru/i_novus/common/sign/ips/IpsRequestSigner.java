@@ -29,10 +29,10 @@ import ru.i_novus.common.sign.soap.dto.SecurityElementInfo;
 import ru.i_novus.common.sign.util.CryptoFormatConverter;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPHeader;
+import jakarta.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;

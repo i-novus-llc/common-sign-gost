@@ -19,11 +19,12 @@ package ru.i_novus.common.sign.util;
  * limitations under the License.
  * -----------------------------------------------------------------
  */
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.common.sign.Init;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
@@ -41,8 +42,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import static ru.i_novus.common.sign.util.Base64Util.getBase64Decoded;
 import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
-@Slf4j
 public class CryptoFormatConverter {
+    private static final Logger logger = LoggerFactory.getLogger(CryptoFormatConverter.class);
+
     private CryptoFormatConverter() {
         Security.addProvider(new BouncyCastleProvider());
         Init.init();

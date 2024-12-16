@@ -20,7 +20,6 @@ package ru.i_novus.common.sign.util;
  * -----------------------------------------------------------------
  */
 
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -34,6 +33,8 @@ import org.bouncycastle.pkcs.*;
 import org.bouncycastle.pkcs.bc.BcPKCS12MacCalculatorBuilder;
 import org.bouncycastle.pkcs.bc.BcPKCS12PBEOutputEncryptorBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS12SafeBagBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 
 import java.io.*;
@@ -47,8 +48,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
-@Slf4j
 public class CryptoIO {
+    private static final Logger logger = LoggerFactory.getLogger(CryptoIO.class);
     private static final int BUFFER_SIZE = 1024;
 
     private CryptoIO() {

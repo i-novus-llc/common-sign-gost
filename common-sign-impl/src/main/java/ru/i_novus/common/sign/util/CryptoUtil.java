@@ -20,7 +20,6 @@ package ru.i_novus.common.sign.util;
  * -----------------------------------------------------------------
  */
 
-import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -55,6 +54,8 @@ import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.Store;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.i_novus.common.sign.api.SignAlgorithmType;
 import java.io.*;
 import java.math.BigInteger;
@@ -69,8 +70,8 @@ import java.util.*;
 
 import static ru.i_novus.common.sign.util.Base64Util.getBase64EncodedString;
 
-@Slf4j
 public class CryptoUtil {
+    private static final Logger logger = LoggerFactory.getLogger(CryptoUtil.class);
     static final String CRYPTO_PROVIDER_NAME = BouncyCastleProvider.PROVIDER_NAME;
     private static final int BUFFER_SIZE = 1024;
 

@@ -261,6 +261,13 @@ public abstract class DOMDigestMethod extends DOMStructure
      */
     abstract String getMessageDigestAlgorithm();
 
+//    @Override
+//    public boolean isFeatureSupported(String feature) {
+//        if (feature == null)
+//            throw new NullPointerException("Feature is not provided");
+//        return false;
+//    }
+
     static final class SHA1 extends DOMDigestMethod {
         SHA1(AlgorithmParameterSpec params)
                 throws InvalidAlgorithmParameterException {
