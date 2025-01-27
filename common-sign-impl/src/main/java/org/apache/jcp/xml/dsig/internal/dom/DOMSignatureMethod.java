@@ -31,6 +31,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.interfaces.DSAKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import java.util.List;
@@ -305,7 +306,12 @@ public abstract class DOMSignatureMethod extends AbstractDOMSignatureMethod {
                 return JavaUtils.convertDsaASN1toXMLDSIG(signature.sign(),
                         size/8);
             } else if (type == Type.ECDSA) {
-                return SignatureECDSA.convertASN1toXMLDSIG(signature.sign());
+                int rawLen = -1;
+                if (key instanceof ECPrivateKey) {
+                    ECPrivateKey ecKey = (ECPrivateKey)key;
+                    rawLen = (ecKey.getParams().getCurve().getField().getFieldSize() + 7) / 8;
+                }
+                return SignatureECDSA.convertASN1toXMLDSIG(signature.sign(), rawLen);
             } else {
                 return signature.sign();
             }
